@@ -1,0 +1,37 @@
+name: wiki_talk
+description: "Collaborative Discussion Reader and Editor for Wikimedia Projects."
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.13.1
+
+dependencies:
+  flutter:
+    sdk: flutter
+  cupertino_icons: ^1.0.8
+  flutter_riverpod: ^2.5.1
+  shared_preferences: ^2.3.2
+  sqlite3: ^2.4.0
+  sqlite3_flutter_libs: ^0.5.24
+  path_provider: ^2.1.4
+  path: ^1.9.0
+  http: ^1.2.2
+  html: ^0.15.4
+  flutter_widget_from_html: ^0.15.2
+  url_launcher: ^6.3.0
+  google_fonts: ^6.2.1
+  intl: ^0.19.0
+  shimmer: ^3.0.0
+  wikimedia_core:
+    path: packages/wikimedia_core
+  wikimedia_oauth2:
+    path: packages/wikimedia_oauth2
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+
+flutter:
+  uses-material-design: true

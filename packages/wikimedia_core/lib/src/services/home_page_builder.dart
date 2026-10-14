@@ -1,0 +1,435 @@
+import 'dart:convert';
+import 'package:html/parser.dart' as html_parser;
+import 'package:html/dom.dart' as dom;
+import '../models/home_page_section.dart';
+import '../models/project_type.dart';
+import '../utils/wiki_utils.dart';
+import '../core/wiki_config.dart';
+import '../core/community_registry.dart';
+
+class HomePageBuilder {
+  static Future<List<HomePageSection>> build(
+    List<int> responseBodyBytes,
+    String languageCode,
+    ProjectType project,
+  ) async {
+    final projectStr = project.name.toLowerCase();
+
+    /// Decode with UTF-8 to handle foreign characters properly
+    final bodyStr = utf8.decode(responseBodyBytes);
+    final document = html_parser.parse(bodyStr);
+
+    if (languageCode == 'jv' && projectStr == 'wikipedia') {
+      return _buildJavaneseWikipedia(document);
+    }
+
+    final removeSelectors = WikiConfig.getCombinedRulesList(
+      languageCode,
+      projectStr,
+      'remove',
+    );
+    final hideSelectors = WikiConfig.getCombinedRulesList(
+      languageCode,
+      projectStr,
+      'hide',
+    );
+
+    final projectRules = WikiConfig.getRules(languageCode, projectStr);
+    final registrySections = CommunityRegistry.isInitialized
+        ? CommunityRegistry.getHomePageSections(languageCode, project)
+        : null;
+    final rulesSections =
+        projectRules?['homePageSections'] as Map<String, dynamic>?;
+
+    List<HomePageSection> sections = [];
+
+    Future<void> extractFromConfig(Map<String, dynamic> configMap) async {
+      for (final entry in configMap.entries) {
+        final titleKey = entry.key;
+        final dynamic config = entry.value;
+
+        String selector;
+        dynamic keepSelector;
+        bool firstOnly = false;
+        bool stripStyle = true;
+
+        if (config is Map) {
+          selector = config['selector'] ?? '';
+          keepSelector = config['keep'];
+          firstOnly = config['firstOnly'] ?? false;
+        } else {
+          selector = config.toString();
+        }
+
+        if (selector.isEmpty) continue;
+
+        final finalSelector =
+            selector.startsWith('.') || selector.startsWith('#')
+            ? selector
+            : '#$selector';
+
+        dom.Element? element = document.querySelector(finalSelector);
+
+        // Resilient fallback for mp- vs mf- prefix differences
+        if (element == null) {
+          if (finalSelector.startsWith('#mp-')) {
+            element =
+                document.querySelector('#mf-${finalSelector.substring(4)}');
+          } else if (finalSelector.startsWith('#mf-')) {
+            element =
+                document.querySelector('#mp-${finalSelector.substring(4)}');
+          } else if (finalSelector.startsWith('.mp-')) {
+            element =
+                document.querySelector('.mf-${finalSelector.substring(4)}');
+          } else if (finalSelector.startsWith('.mf-')) {
+            element =
+                document.querySelector('.mp-${finalSelector.substring(4)}');
+          }
+        }
+
+        if (element != null) {
+          sections.add(
+            await _extractSection(
+              element,
+              titleKey,
+              languageCode: languageCode,
+              projectStr: projectStr,
+              removeSelectors: removeSelectors,
+              hideSelectors: hideSelectors,
+              keepSelector: keepSelector,
+              firstOnly: firstOnly,
+              stripStyle: stripStyle,
+            ),
+          );
+        }
+      }
+    }
+
+    final homeSections = registrySections ?? rulesSections;
+    if (homeSections != null && homeSections.isNotEmpty) {
+      await extractFromConfig(homeSections);
+    }
+
+    /// Enhanced Fallback Logic for Wiktionary and pages with different structures
+    if (sections.isEmpty) {
+      final containers = [
+        '#mw-content-text',
+        '.mw-parser-output',
+        '#bodyContent',
+        '.mf-index',
+      ];
+
+      dom.Element? mainContent;
+      for (var selector in containers) {
+        mainContent = document.querySelector(selector);
+        if (mainContent != null) break;
+      }
+
+      if (mainContent != null) {
+        final fallbackSections = mainContent.querySelectorAll(
+          'section, .mf-section-0',
+        );
+        if (fallbackSections.isNotEmpty) {
+          for (var section in fallbackSections) {
+            if (section.text.trim().length > 50) {
+              sections.add(
+                await _extractSection(
+                  section,
+                  'mainContent',
+                  languageCode: languageCode,
+                  projectStr: projectStr,
+                  stripStyle: true,
+                ),
+              );
+            }
+          }
+        } else {
+          sections.add(
+            await _extractSection(
+              mainContent,
+              'mainContent',
+              languageCode: languageCode,
+              projectStr: projectStr,
+              stripStyle: true,
+            ),
+          );
+        }
+      }
+    }
+
+    if (sections.isEmpty) {
+      sections.add(
+        HomePageSection(
+          titleKey: 'no_content',
+          textHtml:
+              '<i>No specific content found for this language and project.</i>',
+          data: {},
+        ),
+      );
+    }
+
+    return sections;
+  }
+
+  static Future<HomePageSection> _extractSection(
+    dom.Element element,
+    String titleKey, {
+    required String languageCode,
+    required String projectStr,
+    List<String> removeSelectors = const [],
+    List<String> hideSelectors = const [],
+    dynamic keepSelector,
+    bool firstOnly = false,
+    bool stripStyle = false,
+  }) async {
+    /// Find the first valid image that is NOT an icon
+    final allImages = element.querySelectorAll('img');
+    dom.Element? validImg;
+
+    for (var img in allImages) {
+      final src = img.attributes['src'] ?? '';
+      if (!CoreWikiUtils.isIcon(src, img)) {
+        validImg = img;
+        break;
+      }
+    }
+
+    String? imageHtml;
+    String? imageUrl;
+
+    if (validImg != null) {
+      final imgClone = validImg.clone(true);
+      String? src = imgClone.attributes['src'];
+      if (src != null) {
+        imageUrl = await CoreWikiUtils.optimizeImageUrl(
+          src,
+          htmlString: validImg.outerHtml,
+          width: 500, // Updated to 500
+        );
+        imgClone.attributes['src'] = imageUrl;
+      }
+
+      imgClone.attributes.remove('srcset');
+      imgClone.attributes.remove('width');
+      imgClone.attributes.remove('height');
+      imgClone.attributes['style'] =
+          'width: 100%; height: auto; display: block; border-radius: 12px;';
+
+      imageHtml = imgClone.outerHtml;
+      dom.Element parent = validImg;
+      while (parent.parent != null && parent.parent != element) {
+        final parentTag = parent.parent!.localName;
+        if (parentTag == 'span' ||
+            parentTag == 'figure' ||
+            parentTag == 'a' ||
+            (parentTag == 'div' &&
+                (parent.parent!.classes.contains('image') ||
+                    parent.parent!.attributes['style']?.contains('float') == true))) {
+          parent = parent.parent!;
+        } else {
+          break;
+        }
+      }
+      parent.remove();
+    }
+
+    /// Apply removals
+    for (var s in removeSelectors) {
+      if (s == 'img' || s == 'figure') continue;
+      element.querySelectorAll(s).forEach((el) => el.remove());
+    }
+    for (var s in hideSelectors) {
+      if (s == 'img' || s == 'figure') continue;
+      element.querySelectorAll(s).forEach((el) => el.remove());
+    }
+
+    /// Filter content
+    String textHtml;
+    if (keepSelector != null) {
+      final List<String> selectors = keepSelector is List
+          ? List<String>.from(keepSelector)
+          : [keepSelector.toString()];
+
+      List<String> htmlParts = [];
+      for (var s in selectors) {
+        if (firstOnly) {
+          final allKept = element.querySelectorAll(s);
+          dom.Element? kept;
+          for (var el in allKept) {
+            if (el.text.trim().isNotEmpty) {
+              kept = el;
+              break;
+            }
+          }
+          if (kept != null) {
+            if (stripStyle) {
+              kept.attributes.remove('style');
+              kept
+                  .querySelectorAll('*')
+                  .forEach((child) => child.attributes.remove('style'));
+            }
+            htmlParts.add(kept.outerHtml);
+          }
+        } else {
+          final kept = element.querySelectorAll(s);
+          if (stripStyle) {
+            for (var el in kept) {
+              el.attributes.remove('style');
+              el
+                  .querySelectorAll('*')
+                  .forEach((child) => child.attributes.remove('style'));
+            }
+          }
+          htmlParts.addAll(kept.map((e) => e.outerHtml));
+        }
+      }
+      textHtml = htmlParts.join();
+    } else {
+      if (stripStyle) {
+        element.attributes.remove('style');
+        element
+            .querySelectorAll('*')
+            .forEach((child) => child.attributes.remove('style'));
+      }
+      textHtml = element.innerHtml;
+    }
+
+    final Map<String, String?> sectionData = {
+      '${titleKey}ImageHtml': imageHtml,
+      '${titleKey}ImageUrl': imageUrl,
+    };
+
+    return HomePageSection(
+      titleKey: titleKey,
+      textHtml: textHtml,
+      data: sectionData,
+    );
+  }
+
+  static Future<List<HomePageSection>> _buildJavaneseWikipedia(dom.Document document) async {
+    final focusContainer = document.querySelector('div.mp-main-content__focus');
+    final otherContainer = document.querySelector('div.mp-main-content__other');
+
+    final cards = <dom.Element>[];
+    if (focusContainer != null) {
+      cards.addAll(focusContainer.querySelectorAll('div.card'));
+    }
+    if (otherContainer != null) {
+      cards.addAll(otherContainer.querySelectorAll('div.card'));
+    }
+
+    final List<HomePageSection> sections = [];
+
+    for (var card in cards) {
+      final headerSelectors = [
+        'h2',
+        'h3',
+        '.mw-headline',
+        '.card-header',
+        '.card_title_color',
+        '.header_brown',
+        '.header_green'
+      ];
+      dom.Element? headerEl;
+      for (var sel in headerSelectors) {
+        headerEl = card.querySelector(sel);
+        if (headerEl != null) break;
+      }
+
+      final title = headerEl?.text.trim() ?? '';
+      if (title.isEmpty) continue;
+
+      final allImages = card.querySelectorAll('img');
+      dom.Element? validImg;
+      for (var img in allImages) {
+        final widthStr = img.attributes['width'] ?? '';
+        final width = int.tryParse(widthStr) ?? 100;
+        if (width >= 100) {
+          final src = img.attributes['src'] ?? '';
+          if (!CoreWikiUtils.isIcon(src, img)) {
+            validImg = img;
+            break;
+          }
+        }
+      }
+
+      String? imageHtml;
+      String? imageUrl;
+      if (validImg != null) {
+        final imgClone = validImg.clone(true);
+        String? src = imgClone.attributes['src'];
+        if (src != null) {
+          imageUrl = await CoreWikiUtils.optimizeImageUrl(
+            src,
+            htmlString: validImg.outerHtml,
+            width: 500,
+          );
+          imgClone.attributes['src'] = imageUrl;
+        }
+        imgClone.attributes.remove('srcset');
+        imgClone.attributes.remove('width');
+        imgClone.attributes.remove('height');
+        imgClone.attributes['style'] =
+            'width: 100%; height: auto; display: block; border-radius: 12px;';
+        imageHtml = imgClone.outerHtml;
+      }
+
+      final cardClone = card.clone(true);
+      for (var sel in headerSelectors) {
+        cardClone.querySelectorAll(sel).forEach((el) => el.remove());
+      }
+      cardClone.querySelectorAll('.header_brown_background').forEach((el) => el.remove());
+      cardClone.querySelectorAll('.header_green_background').forEach((el) => el.remove());
+
+      if (validImg != null) {
+        final src = validImg.attributes['src'];
+        if (src != null) {
+          cardClone.querySelectorAll('img').forEach((img) {
+            if (img.attributes['src'] == src) {
+              dom.Element parent = img;
+              while (parent.parent != null && parent.parent != cardClone) {
+                final parentTag = parent.parent!.localName;
+                if (parentTag == 'span' || parentTag == 'figure' || parentTag == 'a') {
+                  parent = parent.parent!;
+                } else {
+                  break;
+                }
+              }
+              parent.remove();
+            }
+          });
+        }
+      }
+
+      cardClone.attributes.remove('style');
+      cardClone.querySelectorAll('*').forEach((child) => child.attributes.remove('style'));
+
+      final textHtml = cardClone.innerHtml;
+
+      String? titleKey;
+      final lowerTitle = title.toLowerCase();
+      if (lowerTitle.contains('artikel pethingan') || lowerTitle.contains('artikel pilihan')) {
+        titleKey = 'featuredArticle';
+      } else if (lowerTitle.contains('gambar pethingan') || lowerTitle.contains('gambar pilihan')) {
+        titleKey = 'featuredImage';
+      } else if (lowerTitle.contains('dina iki')) {
+        titleKey = 'onThisDay';
+      }
+
+      if (titleKey != null) {
+        sections.add(
+          HomePageSection(
+            titleKey: titleKey,
+            textHtml: textHtml,
+            data: {
+              '${titleKey}ImageHtml': imageHtml,
+              '${titleKey}ImageUrl': imageUrl,
+            },
+          ),
+        );
+      }
+    }
+
+    return sections;
+  }
+}

@@ -1,0 +1,13 @@
+// Example OAuth 2.0 configuration template for Wikimedia authentication.
+// Copy this file to `lib/oauth_config.dart` and insert your credentials.
+class OAuthConfig {
+  static const String clientId = String.fromEnvironment(
+    'WIKIMEDIA_CLIENT_ID',
+    defaultValue: 'your_client_id_here',
+  );
+
+  static const String redirectUrl = String.fromEnvironment(
+    'WIKIMEDIA_REDIRECT_URL',
+    defaultValue: 'https://sslaia.github.io/wikitalk/callback',
+  );
+}
