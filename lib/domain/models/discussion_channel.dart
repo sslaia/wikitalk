@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../l10n/generated/app_localizations.dart';
 
 /// Represents a distinct discussion subpage, forum, or talk page treated as a channel/group.
 class DiscussionChannel {
@@ -21,6 +22,66 @@ class DiscussionChannel {
     this.unreadCount = 0,
     this.lastRevisionId,
   });
+
+  /// Returns the localized display name for standard default channels,
+  /// or [displayName] for custom or unmapped channels.
+  String getLocalizedDisplayName(AppLocalizations l10n) {
+    if (isCustom) return displayName;
+    switch (id) {
+      case 'id_wiki_kebijakan':
+      case 'en_wiki_policy':
+        return l10n.channelPolicy;
+      case 'id_wiki_teknis':
+      case 'en_wiki_technical':
+        return l10n.channelTechnical;
+      case 'id_wiki_usulan':
+      case 'en_wiki_proposals':
+        return l10n.channelProposals;
+      case 'en_wiki_idealab':
+        return l10n.channelIdeaLab;
+      case 'en_wiki_teahouse':
+        return l10n.channelTeahouse;
+      case 'id_wiki_lain':
+      case 'en_wiki_misc':
+        return l10n.channelMisc;
+      case 'id_wiki_berita':
+        return l10n.channelNews;
+      case 'id_wiki_bahasa':
+        return l10n.channelLanguage;
+      default:
+        return displayName;
+    }
+  }
+
+  /// Returns the localized description for standard default channels,
+  /// or [description] for custom or unmapped channels.
+  String getLocalizedDescription(AppLocalizations l10n) {
+    if (isCustom) return description;
+    switch (id) {
+      case 'id_wiki_kebijakan':
+      case 'en_wiki_policy':
+        return l10n.channelPolicyDesc;
+      case 'id_wiki_teknis':
+      case 'en_wiki_technical':
+        return l10n.channelTechnicalDesc;
+      case 'id_wiki_usulan':
+      case 'en_wiki_proposals':
+        return l10n.channelProposalsDesc;
+      case 'en_wiki_idealab':
+        return l10n.channelIdeaLabDesc;
+      case 'en_wiki_teahouse':
+        return l10n.channelTeahouseDesc;
+      case 'id_wiki_lain':
+      case 'en_wiki_misc':
+        return l10n.channelMiscDesc;
+      case 'id_wiki_berita':
+        return l10n.channelNewsDesc;
+      case 'id_wiki_bahasa':
+        return l10n.channelLanguageDesc;
+      default:
+        return description;
+    }
+  }
 
   IconData get icon => iconFromName(iconName);
 

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/theme/wiki_theme.dart';
 import '../../domain/models/chat_topic.dart';
 import '../../domain/models/discussion_channel.dart';
+import '../../l10n/generated/app_localizations.dart';
 import '../providers/channels_provider.dart';
 import '../providers/topics_provider.dart';
 import 'topic_card.dart';
@@ -48,6 +49,7 @@ class _TopicsListPaneState extends ConsumerState<TopicsListPane> {
     String? formError;
 
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
 
     await showModalBottomSheet(
       context: context,
@@ -76,7 +78,7 @@ class _TopicsListPaneState extends ConsumerState<TopicsListPane> {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text(
-                          'New Topic in ${channel.displayName}',
+                          l10n.newTopicInChannel(channel.getLocalizedDisplayName(l10n)),
                           style: theme.textTheme.titleMedium?.copyWith(
                             fontWeight: FontWeight.bold,
                           ),
@@ -106,27 +108,27 @@ class _TopicsListPaneState extends ConsumerState<TopicsListPane> {
                       ),
                     TextFormField(
                       controller: titleController,
-                      decoration: const InputDecoration(
-                        labelText: 'Topic Title',
-                        hintText: 'e.g. Proposal for new guideline',
-                        border: OutlineInputBorder(),
+                      decoration: InputDecoration(
+                        labelText: l10n.topicTitleLabel,
+                        hintText: l10n.topicTitleHint,
+                        border: const OutlineInputBorder(),
                         isDense: true,
                       ),
                       validator: (v) =>
-                          (v == null || v.trim().isEmpty) ? 'Title is required' : null,
+                          (v == null || v.trim().isEmpty) ? l10n.topicTitleRequired : null,
                     ),
                     const SizedBox(height: 12),
                     TextFormField(
                       controller: messageController,
                       maxLines: 5,
-                      decoration: const InputDecoration(
-                        labelText: 'Message Body (Wikitext supported)',
-                        hintText: 'Share your thoughts with the community...',
-                        border: OutlineInputBorder(),
+                      decoration: InputDecoration(
+                        labelText: l10n.messageBodyLabel,
+                        hintText: l10n.messageBodyHint,
+                        border: const OutlineInputBorder(),
                         alignLabelWithHint: true,
                       ),
                       validator: (v) =>
-                          (v == null || v.trim().isEmpty) ? 'Message is required' : null,
+                          (v == null || v.trim().isEmpty) ? l10n.topicContentRequired : null,
                     ),
                     const SizedBox(height: 16),
                     FilledButton(
@@ -165,7 +167,7 @@ class _TopicsListPaneState extends ConsumerState<TopicsListPane> {
                                 color: Colors.white,
                               ),
                             )
-                          : const Text('Publish Topic to Wiki'),
+                          : Text(l10n.publishTopicToWiki),
                     ),
                     const SizedBox(height: 20),
                   ],
@@ -182,13 +184,14 @@ class _TopicsListPaneState extends ConsumerState<TopicsListPane> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
+    final l10n = AppLocalizations.of(context)!;
 
     final activeChannel = ref.watch(activeChannelProvider);
     final topicsState = ref.watch(topicsProvider);
     final selectedTopicId = ref.watch(activeTopicIdProvider);
 
     if (activeChannel == null) {
-      return const Center(child: Text('Select a channel to view discussions'));
+      return Center(child: Text(l10n.selectChannelToView));
     }
 
     final filteredTopics = topicsState.topics.where((t) {
@@ -220,7 +223,7 @@ class _TopicsListPaneState extends ConsumerState<TopicsListPane> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      activeChannel.displayName,
+                      activeChannel.getLocalizedDisplayName(l10n),
                       style: theme.textTheme.titleMedium?.copyWith(
                         fontWeight: FontWeight.bold,
                         fontSize: 16,
@@ -228,9 +231,9 @@ class _TopicsListPaneState extends ConsumerState<TopicsListPane> {
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
-                    if (activeChannel.description.isNotEmpty)
+                    if (activeChannel.getLocalizedDescription(l10n).isNotEmpty)
                       Text(
-                        activeChannel.description,
+                        activeChannel.getLocalizedDescription(l10n),
                         style: theme.textTheme.bodySmall?.copyWith(
                           fontSize: 11.5,
                           color: isDark
@@ -245,7 +248,7 @@ class _TopicsListPaneState extends ConsumerState<TopicsListPane> {
               ),
               IconButton(
                 icon: const Icon(Icons.add_comment_outlined),
-                tooltip: 'New Topic',
+                tooltip: l10n.newTopic,
                 onPressed: () => _showNewTopicDialog(context, activeChannel),
               ),
             ],
@@ -258,7 +261,9 @@ class _TopicsListPaneState extends ConsumerState<TopicsListPane> {
           child: TextField(
             controller: _searchController,
             decoration: InputDecoration(
-              hintText: 'Search topics in ${activeChannel.displayName}...',
+              hintText: l10n.searchTopicsInChannel(
+                activeChannel.getLocalizedDisplayName(l10n),
+              ),
               prefixIcon: const Icon(Icons.search_rounded, size: 18),
               suffixIcon: _searchQuery.isNotEmpty
                   ? IconButton(
@@ -299,7 +304,7 @@ class _TopicsListPaneState extends ConsumerState<TopicsListPane> {
                               ElevatedButton(
                                 onPressed: () =>
                                     ref.read(topicsProvider.notifier).loadTopics(),
-                                child: const Text('Retry'),
+                                child: Text(l10n.retry),
                               ),
                             ],
                           ),
@@ -315,8 +320,8 @@ class _TopicsListPaneState extends ConsumerState<TopicsListPane> {
                                 const SizedBox(height: 8),
                                 Text(
                                   _searchQuery.isEmpty
-                                      ? 'No discussions in this channel yet.'
-                                      : 'No topics match "$_searchQuery"',
+                                      ? l10n.noDiscussionsInChannel
+                                      : l10n.noTopicsMatchQuery(_searchQuery),
                                   style: const TextStyle(color: Colors.grey),
                                 ),
                               ],

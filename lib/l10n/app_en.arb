@@ -1,0 +1,245 @@
+{
+  "@@locale": "en",
+  "appTitle": "Wiki Talk",
+  "@appTitle": { "description": "Application title" },
+  "cancel": "Cancel",
+  "save": "Save",
+  "submit": "Submit",
+  "retry": "Retry",
+  "close": "Close",
+  "remove": "Remove",
+  "error": "Error",
+  "apply": "Apply",
+  "channels": "Channels",
+  "addChannel": "Add Channel",
+  "addCustomTalkPage": "Add Custom Talk Page",
+  "wikiPageTitle": "Wiki Page Title",
+  "wikiPageTitleHint": "e.g. Pembicaraan:Indonesia or WP:Kedutaan",
+  "channelDisplayName": "Channel Display Name",
+  "channelDisplayNameHint": "e.g. Indonesia Talk",
+  "pageTitleRequired": "Page title is required",
+  "nameRequired": "Name is required",
+  "customTalkPage": "Custom talk page",
+  "loggedIn": "Logged in",
+  "notLoggedIn": "Not logged in",
+  "tapToLogIn": "Tap to log in",
+  "settings": "Settings",
+  "resetDefaults": "Reset Defaults",
+  "resetChannelsSnackBar": "Reset channels to project defaults",
+  "customBadge": "CUSTOM",
+  "removeChannel": "Remove channel",
+  "removedChannelSnackBar": "Removed \"{name}\"",
+  "@removedChannelSnackBar": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+  "addedChannelSnackBar": "Added channel \"{name}\"",
+  "@addedChannelSnackBar": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+  "addSubpageOrChannel": "Add Subpage / Channel",
+  "searchTopicsHint": "Search topics, subjects or authors...",
+  "searchTopicsInChannel": "Search topics in {channel}...",
+  "@searchTopicsInChannel": {
+    "placeholders": {
+      "channel": { "type": "String" }
+    }
+  },
+  "loadingDiscussions": "Loading discussions...",
+  "noDiscussionsFound": "No discussions found",
+  "noDiscussionsInChannel": "No discussions in this channel yet.",
+  "noTopicsMatchQuery": "No topics match \"{query}\"",
+  "@noTopicsMatchQuery": {
+    "placeholders": {
+      "query": { "type": "String" }
+    }
+  },
+  "failedToLoadDiscussions": "Failed to load discussions",
+  "newTopic": "New Topic",
+  "newTopicInChannel": "New Topic in {channel}",
+  "@newTopicInChannel": {
+    "placeholders": {
+      "channel": { "type": "String" }
+    }
+  },
+  "topicTitleLabel": "Topic Title",
+  "topicTitleHint": "e.g. Proposal for new guideline",
+  "messageBodyLabel": "Message Body (Wikitext supported)",
+  "messageBodyHint": "Share your thoughts with the community...",
+  "publishTopicToWiki": "Publish Topic to Wiki",
+  "selectChannelToView": "Select a channel to view discussions",
+  "commentsCount": "{count, plural, =0{No comments} =1{1 comment} other{{count} comments}}",
+  "@commentsCount": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "authorsCount": "{count, plural, =0{0 authors} =1{1 author} other{{count} authors}}",
+  "@authorsCount": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "commentsAndContributors": "{comments} comments · {authors} contributors",
+  "@commentsAndContributors": {
+    "placeholders": {
+      "comments": { "type": "int" },
+      "authors": { "type": "int" }
+    }
+  },
+  "noCommentsYetBeFirst": "No comments in this thread yet. Be the first to reply!",
+  "createNewTopic": "Create New Topic",
+  "topicSubjectTitle": "Topic Subject / Title",
+  "topicTitleRequired": "Topic title is required",
+  "topicMessageContent": "Message Content",
+  "topicContentRequired": "Message content is required",
+  "publishTopic": "Publish Topic",
+  "topicCreatedSuccess": "Topic published successfully!",
+  "selectTopicToRead": "Select a discussion topic to start reading",
+  "noMessagesYet": "No messages in this discussion yet.",
+  "reply": "Reply",
+  "replyingTo": "Replying to @{author}",
+  "@replyingTo": {
+    "placeholders": {
+      "author": { "type": "String" }
+    }
+  },
+  "cancelReply": "Cancel reply",
+  "replyPlaceholder": "Type a reply or message (wikitext supported)...",
+  "writeCommentOnWiki": "Write a comment on-wiki...",
+  "bold": "Bold",
+  "italic": "Italic",
+  "link": "Link",
+  "signature": "Signature",
+  "send": "Send",
+  "loginRequired": "Login Required",
+  "loginRequiredMessage": "You must log in with your Wikimedia account to post replies to this discussion.",
+  "logIn": "Log In",
+  "loginRequiredToReply": "Please log in with Wikimedia to post replies.",
+  "replySentSuccess": "Reply posted successfully!",
+  "projectAndLanguage": "Project & Language",
+  "wikimediaProject": "Wikimedia Project",
+  "languageEdition": "Language Edition",
+  "customLanguageCodeHint": "Custom language code (e.g. su, min, bar)",
+  "customLanguage": "Custom language",
+  "customLanguageCodeDialogTitle": "Custom Language Code",
+  "isoLanguageCode": "ISO Language Code",
+  "targetDomain": "Target Domain: {domain}",
+  "@targetDomain": {
+    "placeholders": {
+      "domain": { "type": "String" }
+    }
+  },
+  "baseDiscussionPage": "Base Discussion Page",
+  "baseDiscussionPageDesc": "Village pump, forum, or discussion portal name in this language/project (e.g. \"Wikipedia:Village pump\", \"Wikipedia:Thảo luận\", or \"Wikipedia:Warung Kopi\").",
+  "basePageTitleLabel": "Base page title (e.g. Wikipedia:Village pump)",
+  "basePageTitleHint": "e.g. Wikipedia:Village pump",
+  "channelDescriptionHint": "e.g. Proposals for new ideas from the community",
+  "subpageLabel": "Subpage",
+  "customLanguageHint": "e.g. th, vi, tet, tl",
+  "toolbarSupport": "Support",
+  "toolbarSupportTooltip": "Support badge",
+  "toolbarOppose": "Oppose",
+  "toolbarOpposeTooltip": "Oppose badge",
+  "toolbarMentionTooltip": "Mention a user",
+  "userLabel": "User",
+  "timeMinutesAgo": "{count}m ago",
+  "@timeMinutesAgo": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "timeHoursAgo": "{count}h ago",
+  "@timeHoursAgo": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "timeDaysAgo": "{count}d ago",
+  "@timeDaysAgo": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "mainDiscussionBoardTitle": "Main Discussion Board Title",
+  "applyTargetPageTitle": "Apply Target Page Title",
+  "set": "Set",
+  "targetPageSetSnackBar": "Target page set to \"{title}\"",
+  "@targetPageSetSnackBar": {
+    "placeholders": {
+      "title": { "type": "String" }
+    }
+  },
+  "resetToDefault": "Reset to Default",
+  "resetToDefaultSnackBar": "Reset to project default page title",
+  "channelsAndSubpages": "Channels & Subpages",
+  "channelsSubpagesDesc": "Configure subpages or dedicated discussion pages that appear as channels in the app.",
+  "noChannelsConfigured": "No channels configured. Tap below to add.",
+  "noChannelsConfiguredFull": "No channels configured.\nTap below to add a subpage or reset to defaults.",
+  "addDiscussionChannelTitle": "Add Discussion Channel / Subpage",
+  "fullOnWikiPageTitle": "Full On-Wiki Page Title",
+  "channelDescriptionOptional": "Description (Optional)",
+  "channelIconLabel": "Icon",
+  "appearance": "Appearance",
+  "themeMode": "Theme Mode",
+  "themeSystem": "System",
+  "themeLight": "Light",
+  "themeDark": "Dark",
+  "accountAndAuthorization": "Account & Authorization",
+  "wikimediaAccount": "Wikimedia Account",
+  "guestNotice": "You can browse public discussions freely as a guest. To post replies or start new topics, log in with your Wikimedia account.",
+  "connectedViaOAuth": "Connected via Wikimedia OAuth 2.0",
+  "loggedOutNotice": "Not logged in. You can read discussions freely. Log in to reply or create new topics.",
+  "loginWithWikimedia": "Log in with Wikimedia",
+  "logOut": "Log out",
+  "pageDescriptionOptional": "Page Description (optional)",
+  "channelIcon": "Channel Icon",
+  "aboutAppTitle": "Wiki Talk v1.0.0",
+  "aboutAppDescription": "Collaborative discussion reader and editor for Wikimedia community talk pages and village pumps.\n\nClassification: Tools / Reference & Productivity.\nStorage: All discussions are public on-wiki wikitext. Offline cache is stored in local device SQLite.\nPermissions: Strictly Internet for MediaWiki API.",
+  "wikimediaTargetHeader": "WIKIMEDIA TARGET",
+  "targetDiscussionPageTitleHeader": "TARGET DISCUSSION PAGE TITLE",
+  "channelsSubpagesHeader": "CHANNELS & SUBPAGES",
+  "appearanceHeader": "APPEARANCE",
+  "wikimediaAccountHeader": "WIKIMEDIA ACCOUNT",
+  "aboutComplianceHeader": "ABOUT & PLAY CONSOLE COMPLIANCE",
+  "captchaSecurityVerification": "Security Verification (CAPTCHA)",
+  "captchaVerificationMessage": "MediaWiki requires a quick verification before publishing this edit.",
+  "captchaEnterText": "Enter CAPTCHA text",
+  "captchaAnswerLabel": "Answer / Word",
+  "captchaRequired": "CAPTCHA response is required",
+  "verifyAndSubmit": "Verify & Submit",
+  "channelPolicy": "Policy",
+  "channelPolicyDesc": "Policy and guideline proposals, debates, and RFCs",
+  "channelTechnical": "Technical",
+  "channelTechnicalDesc": "MediaWiki technical issues, templates, and bots",
+  "channelProposals": "Proposals",
+  "channelProposalsDesc": "New proposals and ideas for the community",
+  "channelIdeaLab": "Idea Lab",
+  "channelIdeaLabDesc": "Incubate early-stage proposals before RFC",
+  "channelTeahouse": "Teahouse",
+  "channelTeahouseDesc": "Friendly space for new editors to ask questions",
+  "channelMisc": "Miscellaneous",
+  "channelMiscDesc": "General discussions not fitting other pumps",
+  "channelNews": "News",
+  "channelNewsDesc": "Project announcements, contests, and community news",
+  "channelLanguage": "Language",
+  "channelLanguageDesc": "Grammar, translation terms, and spelling rules",
+  "channelCommunityDiscussion": "Community Discussion",
+  "channelMainDiscussionBoard": "Main discussion board on {domain}",
+  "@channelMainDiscussionBoard": {
+    "placeholders": {
+      "domain": { "type": "String" }
+    }
+  },
+  "channelDiscussionPageOn": "Discussion page on {domain}",
+  "@channelDiscussionPageOn": {
+    "placeholders": {
+      "domain": { "type": "String" }
+    }
+  },
+  "failedToLoadCaptchaImage": "Failed to load CAPTCHA image.",
+  "emptyComment": "Empty comment"
+}

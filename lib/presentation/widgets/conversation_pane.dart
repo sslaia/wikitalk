@@ -4,7 +4,9 @@ import '../../core/theme/wiki_theme.dart';
 import '../../data/services/wiki_chat_api_service.dart';
 import '../../domain/models/chat_message.dart';
 import '../../domain/models/chat_topic.dart';
+import '../../l10n/generated/app_localizations.dart';
 import '../providers/auth_provider.dart';
+import '../providers/settings_provider.dart';
 import '../providers/topics_provider.dart';
 import 'chat_bubble.dart';
 import 'chat_composer.dart';
@@ -35,25 +37,24 @@ class _ConversationPaneState extends ConsumerState<ConversationPane> {
   Future<void> _handleSendMessage(String text) async {
     final topic = widget.topic;
     if (topic == null) return;
+    final l10n = AppLocalizations.of(context)!;
 
     final auth = ref.read(authProvider);
     if (!auth.isLoggedIn) {
       final shouldLogin = await showDialog<bool>(
         context: context,
         builder: (ctx) => AlertDialog(
-          title: const Text('Login Required'),
-          content: const Text(
-            'You must log in with your Wikimedia account to post replies to this discussion.',
-          ),
+          title: Text(l10n.loginRequired),
+          content: Text(l10n.loginRequiredMessage),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(ctx).pop(false),
-              child: const Text('Cancel'),
+              child: Text(l10n.cancel),
             ),
             FilledButton(
               onPressed: () => Navigator.of(ctx).pop(true),
               style: FilledButton.styleFrom(backgroundColor: WikiTheme.wikiBlue),
-              child: const Text('Log In'),
+              child: Text(l10n.logIn),
             ),
           ],
         ),
@@ -152,8 +153,10 @@ class _ConversationPaneState extends ConsumerState<ConversationPane> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
+    final l10n = AppLocalizations.of(context)!;
     final topic = widget.topic;
     final currentUsername = ref.watch(authProvider).username;
+    final domain = ref.watch(settingsProvider).target.domain;
 
     if (topic == null) {
       return Center(
@@ -164,7 +167,7 @@ class _ConversationPaneState extends ConsumerState<ConversationPane> {
                 size: 54, color: isDark ? Colors.white30 : Colors.black26),
             const SizedBox(height: 12),
             Text(
-              'Select a discussion topic to start reading',
+              l10n.selectTopicToRead,
               style: theme.textTheme.bodyMedium?.copyWith(
                 color: isDark
                     ? WikiTheme.darkTextSecondary
@@ -212,7 +215,7 @@ class _ConversationPaneState extends ConsumerState<ConversationPane> {
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      '${topic.commentCount} comments · ${topic.authorCount} contributors',
+                      l10n.commentsAndContributors(topic.commentCount, topic.authorCount),
                       style: theme.textTheme.bodySmall?.copyWith(
                         color: isDark
                             ? WikiTheme.darkTextSecondary
@@ -232,7 +235,7 @@ class _ConversationPaneState extends ConsumerState<ConversationPane> {
           child: topic.messages.isEmpty
               ? Center(
                   child: Text(
-                    'No comments in this thread yet. Be the first to reply!',
+                    l10n.noCommentsYetBeFirst,
                     style: TextStyle(
                       color: isDark
                           ? WikiTheme.darkTextSecondary
@@ -253,6 +256,7 @@ class _ConversationPaneState extends ConsumerState<ConversationPane> {
                     return ChatBubble(
                       message: msg,
                       isCurrentUser: isCurrent,
+                      domain: domain,
                       onReplyTap: () {
                         setState(() => _replyingTo = msg);
                       },

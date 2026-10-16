@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../../core/theme/wiki_theme.dart';
 import '../../domain/models/chat_topic.dart';
+import '../../l10n/generated/app_localizations.dart';
 
 /// Card displaying a discussion topic in the topic list.
 class TopicCard extends StatelessWidget {
@@ -20,6 +21,7 @@ class TopicCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
+    final l10n = AppLocalizations.of(context)!;
 
     final selectedBg = isDark
         ? const Color(0xFF1B3B6F).withValues(alpha: 0.4)
@@ -99,7 +101,7 @@ class TopicCard extends StatelessWidget {
                     // Latest Timestamp
                     if (topic.latestReplyTimestamp != null)
                       Text(
-                        _formatDate(topic.latestReplyTimestamp!),
+                        _formatDate(topic.latestReplyTimestamp!, l10n),
                         style: theme.textTheme.bodySmall?.copyWith(
                           fontSize: 11,
                           color: isDark
@@ -154,15 +156,15 @@ class TopicCard extends StatelessWidget {
         .trim();
   }
 
-  String _formatDate(DateTime dt) {
+  String _formatDate(DateTime dt, AppLocalizations l10n) {
     final now = DateTime.now();
     final diff = now.difference(dt);
     if (diff.inMinutes < 60) {
-      return '${diff.inMinutes}m ago';
+      return l10n.timeMinutesAgo(diff.inMinutes);
     } else if (diff.inHours < 24) {
-      return '${diff.inHours}h ago';
+      return l10n.timeHoursAgo(diff.inHours);
     } else if (diff.inDays < 7) {
-      return '${diff.inDays}d ago';
+      return l10n.timeDaysAgo(diff.inDays);
     }
     return DateFormat('d MMM').format(dt);
   }

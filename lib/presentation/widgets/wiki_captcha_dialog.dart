@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../core/theme/wiki_theme.dart';
 import '../../data/services/wiki_chat_api_service.dart';
+import '../../l10n/generated/app_localizations.dart';
 
 /// Dialog to solve MediaWiki anti-abuse (ConfirmEdit) CAPTCHA.
 class WikiCaptchaDialog extends StatefulWidget {
@@ -23,21 +24,29 @@ class _WikiCaptchaDialogState extends State<WikiCaptchaDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
     return AlertDialog(
-      title: const Row(
+      title: Row(
         children: [
-          Icon(Icons.security_rounded, color: WikiTheme.wikiBlue),
-          SizedBox(width: 8),
-          Text('CAPTCHA Verification'),
+          const Icon(Icons.security_rounded, color: WikiTheme.wikiBlue),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              l10n.captchaSecurityVerification,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
         ],
       ),
       content: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'MediaWiki requires a quick verification before publishing this edit.',
-            style: TextStyle(fontSize: 13),
+          Text(
+            l10n.captchaVerificationMessage,
+            style: const TextStyle(fontSize: 13),
           ),
           const SizedBox(height: 12),
           if (widget.exception.question != null)
@@ -59,15 +68,15 @@ class _WikiCaptchaDialogState extends State<WikiCaptchaDialog> {
               child: Image.network(
                 widget.exception.url!,
                 errorBuilder: (_, _, _) =>
-                    const Text('Failed to load CAPTCHA image.'),
+                    Text(l10n.failedToLoadCaptchaImage),
               ),
             ),
           const SizedBox(height: 12),
           TextField(
             controller: _controller,
-            decoration: const InputDecoration(
-              labelText: 'Answer / Word',
-              border: OutlineInputBorder(),
+            decoration: InputDecoration(
+              labelText: l10n.captchaAnswerLabel,
+              border: const OutlineInputBorder(),
               isDense: true,
             ),
           ),
@@ -76,7 +85,7 @@ class _WikiCaptchaDialogState extends State<WikiCaptchaDialog> {
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
-          child: const Text('Cancel'),
+          child: Text(l10n.cancel),
         ),
         FilledButton(
           onPressed: () {
@@ -89,7 +98,7 @@ class _WikiCaptchaDialogState extends State<WikiCaptchaDialog> {
             }
           },
           style: FilledButton.styleFrom(backgroundColor: WikiTheme.wikiBlue),
-          child: const Text('Verify & Submit'),
+          child: Text(l10n.verifyAndSubmit),
         ),
       ],
     );

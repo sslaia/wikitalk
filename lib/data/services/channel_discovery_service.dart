@@ -1,6 +1,8 @@
 import 'dart:convert';
+
 import 'package:http/http.dart' as http;
 import 'package:wikimedia_core/wikimedia_core.dart';
+
 import '../../domain/models/discussion_channel.dart';
 import '../../domain/models/wiki_project_target.dart';
 
@@ -8,7 +10,8 @@ import '../../domain/models/wiki_project_target.dart';
 class ChannelDiscoveryService {
   final http.Client _client;
 
-  ChannelDiscoveryService({http.Client? client}) : _client = client ?? http.Client();
+  ChannelDiscoveryService({http.Client? client})
+    : _client = client ?? http.Client();
 
   /// Resolve known channels or dynamically discover them via API.
   Future<List<DiscussionChannel>> getChannels(
@@ -19,7 +22,8 @@ class ChannelDiscoveryService {
     final project = target.project;
 
     // Check predefined curated channels when basePageTitle is default or null
-    final isDefaultBase = basePageTitle == null ||
+    final isDefaultBase =
+        basePageTitle == null ||
         basePageTitle.trim().isEmpty ||
         basePageTitle.trim().toLowerCase() == 'wikipedia:warung kopi' ||
         basePageTitle.trim().toLowerCase() == 'wikipedia:village pump' ||
@@ -46,43 +50,43 @@ class ChannelDiscoveryService {
     DiscussionChannel(
       id: 'id_wiki_kebijakan',
       pageTitle: 'Wikipedia:Warung Kopi (Kebijakan)',
-      displayName: 'Kebijakan',
-      description: 'Diskusi kebijakan, pedoman, dan tata kelola komunitas',
+      displayName: 'Policy',
+      description: 'Policy and guideline proposals, debates, and RFCs',
       iconName: 'gavel',
     ),
     DiscussionChannel(
       id: 'id_wiki_usulan',
       pageTitle: 'Wikipedia:Warung Kopi (Usulan)',
-      displayName: 'Usulan',
-      description: 'Usulan ide baru, fitur, dan proyek komunitas',
+      displayName: 'Proposals',
+      description: 'New proposals, features, and community ideas',
       iconName: 'lightbulb',
     ),
     DiscussionChannel(
       id: 'id_wiki_teknis',
       pageTitle: 'Wikipedia:Warung Kopi (Teknis)',
-      displayName: 'Teknis',
-      description: 'Masalah teknis, bug bot, skrip Lua, dan gadget',
+      displayName: 'Technical',
+      description: 'Technical issues, bot bugs, Lua scripts, and gadgets',
       iconName: 'build',
     ),
     DiscussionChannel(
       id: 'id_wiki_bahasa',
       pageTitle: 'Wikipedia:Warung Kopi (Bahasa)',
-      displayName: 'Bahasa',
-      description: 'Tata bahasa, istilah terjemahan, dan kaidah KBBI',
+      displayName: 'Language',
+      description: 'Grammar, translation terms, and spelling rules',
       iconName: 'translate',
     ),
     DiscussionChannel(
       id: 'id_wiki_berita',
       pageTitle: 'Wikipedia:Warung Kopi (Berita)',
-      displayName: 'Berita',
-      description: 'Pengumuman proyek, lomba, warta, dan kabar komunitas',
+      displayName: 'News',
+      description: 'Project announcements, contests, and community news',
       iconName: 'campaign',
     ),
     DiscussionChannel(
       id: 'id_wiki_lain',
       pageTitle: 'Wikipedia:Warung Kopi (Lain-lain)',
-      displayName: 'Lain-lain',
-      description: 'Obrolan umum dan topik santai seputar ensiklopedia',
+      displayName: 'Miscellaneous',
+      description: 'General discussions and casual community topics',
       iconName: 'coffee',
     ),
   ];
@@ -137,7 +141,7 @@ class ChannelDiscoveryService {
       id: 'jv_wiki_angkringan',
       pageTitle: 'Wikipedia:Angkringan',
       displayName: 'Angkringan',
-      description: 'Papan pirembagan komunitas Wikipedia Basa Jawa',
+      description: 'Ruang diskusi komunitas Wikipedia Basa Jawa',
       iconName: 'coffee',
     ),
   ];
@@ -147,7 +151,7 @@ class ChannelDiscoveryService {
       id: 'nia_wiki_monganga_afo',
       pageTitle: 'Wikipedia:Monganga_afo',
       displayName: 'Monganga Afo',
-      description: 'Bawagöli zosura ba zohalöŵö ba Wikipedia Li Niha',
+      description: 'Ruang diskusi komunitas Wikipedia Nias',
       iconName: 'coffee',
     ),
   ];
@@ -178,10 +182,15 @@ class ChannelDiscoveryService {
         'formatversion': '2',
       });
 
-      final res = await _client.get(
-        uri,
-        headers: {'User-Agent': 'WikiTalk/1.0.0 (Wikimedia Community Discussion Tool)'},
-      ).timeout(const Duration(seconds: 10));
+      final res = await _client
+          .get(
+            uri,
+            headers: {
+              'User-Agent':
+                  'WikiTalk/1.0.0 (Wikimedia Community Discussion Tool)',
+            },
+          )
+          .timeout(const Duration(seconds: 10));
 
       if (res.statusCode == 200) {
         final data = json.decode(res.body) as Map<String, dynamic>;
@@ -190,10 +199,14 @@ class ChannelDiscoveryService {
         final channels = <DiscussionChannel>[];
         for (final item in items) {
           final title = item['title'] as String? ?? '';
-          if (title.contains('/Arsip') || title.contains('/Archive') || title.contains('/Index')) {
+          if (title.contains('/Arsip') ||
+              title.contains('/Archive') ||
+              title.contains('/Index')) {
             continue;
           }
-          final cleanName = title.replaceAll(RegExp(r'^[^:]+:'), '').replaceAll('_', ' ');
+          final cleanName = title
+              .replaceAll(RegExp(r'^[^:]+:'), '')
+              .replaceAll('_', ' ');
           channels.add(
             DiscussionChannel(
               id: '${target.langCode}_${target.project.name}_${title.hashCode}',
@@ -209,7 +222,10 @@ class ChannelDiscoveryService {
       }
     } catch (_) {}
 
-    final fallbackClean = rootPrefix.replaceAll(RegExp(r'^[^:]+:'), '').replaceAll('_', ' ');
+    final fallbackClean = rootPrefix
+        .replaceAll(RegExp(r'^[^:]+:'), '')
+        .replaceAll('_', ' ');
+
     return [
       DiscussionChannel(
         id: '${target.langCode}_${target.project.name}_main',

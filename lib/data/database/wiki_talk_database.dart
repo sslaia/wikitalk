@@ -81,9 +81,14 @@ class WikiTalkDatabase {
         html_content TEXT NOT NULL,
         level INTEGER DEFAULT 1,
         parent_id TEXT,
-        replying_to_author TEXT
+        replying_to_author TEXT,
+        replying_to_snippet TEXT
       );
     ''');
+
+    try {
+      db.execute('ALTER TABLE messages ADD COLUMN replying_to_snippet TEXT');
+    } catch (_) {}
 
     db.execute('''
       CREATE TABLE IF NOT EXISTS drafts (
@@ -164,8 +169,8 @@ class WikiTalkDatabase {
       ''');
 
       final msgStmt = _db.prepare('''
-        INSERT OR REPLACE INTO messages (db_id, id, topic_db_id, author, timestamp, html_content, level, parent_id, replying_to_author)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        INSERT OR REPLACE INTO messages (db_id, id, topic_db_id, author, timestamp, html_content, level, parent_id, replying_to_author, replying_to_snippet)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       ''');
 
       final now = DateTime.now().millisecondsSinceEpoch;
@@ -199,6 +204,7 @@ class WikiTalkDatabase {
             msg.level,
             msg.parentId,
             msg.replyingToAuthor,
+            msg.replyingToSnippet,
           ]);
         }
       }

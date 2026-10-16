@@ -1,0 +1,896 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WikiTalk - Conversations & Collaboration for Wikimedia Communities</title>
+    <meta name="description" content="A Flutter-based mobile client to read, monitor, and participate in discussion talk pages across Wikimedia projects (Wikipedia, Wiktionary, etc.) in various languages.">
+    <meta name="keywords" content="WikiTalk, Wikipedia Talk Pages, Wikimedia DiscussionTools, Village Pump, WikiChat, WikiNusa, Flutter Wikimedia">
+    <link rel="icon" type="image/png" href="wikitalk-icon.png">
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&family=Noto+Serif:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --wiki-blue: #3366CC;
+            --wiki-blue-dark: #204A87;
+            --wiki-blue-light: #EAF3FF;
+            --wiki-red: #D33D33;
+            --wiki-green: #00AF89;
+            --wiki-yellow: #FFCC33;
+            --bg-light: #F8F9FA;
+            --surface-card: #FFFFFF;
+            --surface-variant: #F1F5F9;
+            --text-main: #202122;
+            --text-muted: #54595D;
+            --border-color: #E2E8F0;
+            --card-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+            --card-hover-shadow: 0 20px 40px rgba(51, 102, 204, 0.12);
+            --radius-lg: 20px;
+            --radius-md: 14px;
+            --radius-sm: 8px;
+            --transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--bg-light);
+            color: var(--text-main);
+            line-height: 1.6;
+            overflow-x: hidden;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        /* Top Navigation */
+        nav.navbar {
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            background: rgba(255, 255, 255, 0.90);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border-bottom: 1px solid var(--border-color);
+            padding: 14px 24px;
+        }
+
+        .nav-container {
+            max-width: 1140px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .nav-brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+            color: var(--text-main);
+        }
+
+        .nav-logo {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(51, 102, 204, 0.2);
+            object-fit: cover;
+        }
+
+        .nav-title {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.4rem;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            background: linear-gradient(135deg, var(--wiki-blue), #10337A);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .nav-actions {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 24px;
+            list-style: none;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: var(--text-muted);
+            font-weight: 500;
+            font-size: 0.95rem;
+            transition: var(--transition);
+        }
+
+        .nav-links a:hover {
+            color: var(--wiki-blue);
+        }
+
+        /* Language Switcher */
+        .lang-switch {
+            display: inline-flex;
+            background: #E2E8F0;
+            padding: 3px;
+            border-radius: 30px;
+            font-size: 0.82rem;
+            font-weight: 700;
+        }
+
+        .lang-switch a {
+            padding: 5px 12px;
+            border-radius: 20px;
+            text-decoration: none;
+            color: var(--text-muted);
+            transition: var(--transition);
+            display: inline-block;
+        }
+
+        .lang-switch a.active {
+            background: #FFFFFF;
+            color: var(--wiki-blue);
+            box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+        }
+
+        /* Hero Section */
+        .hero {
+            width: 100%;
+            padding: 70px 20px 40px 20px;
+            background: radial-gradient(circle at 50% 20%, rgba(51, 102, 204, 0.08) 0%, rgba(248, 249, 250, 0) 70%),
+                        linear-gradient(180deg, rgba(234, 243, 255, 0.5) 0%, rgba(248, 249, 250, 1) 100%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--wiki-blue-light);
+            color: var(--wiki-blue);
+            padding: 7px 18px;
+            border-radius: 30px;
+            font-size: 0.86rem;
+            font-weight: 600;
+            margin-bottom: 24px;
+            border: 1px solid rgba(51, 102, 204, 0.15);
+        }
+
+        .app-logo {
+            width: 130px;
+            height: 130px;
+            border-radius: 28px;
+            box-shadow: 0 20px 40px rgba(51, 102, 204, 0.2);
+            margin-bottom: 24px;
+            transition: transform 0.3s ease;
+        }
+
+        .app-logo:hover {
+            transform: translateY(-5px) scale(1.02);
+        }
+
+        h1 {
+            font-family: 'Outfit', sans-serif;
+            font-size: 3.4rem;
+            font-weight: 800;
+            letter-spacing: -1px;
+            margin: 0;
+            background: linear-gradient(135deg, var(--wiki-blue) 0%, #163677 70%, var(--wiki-green) 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .tagline {
+            font-family: 'Noto Serif', serif;
+            font-style: italic;
+            font-size: 1.25rem;
+            color: #4A5568;
+            margin-top: 12px;
+            margin-bottom: 20px;
+            max-width: 720px;
+        }
+
+        .description {
+            max-width: 700px;
+            font-size: 1.1rem;
+            color: #475569;
+            margin-bottom: 35px;
+            padding: 0 10px;
+            line-height: 1.7;
+        }
+
+        .app-links {
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-bottom: 40px;
+        }
+
+        .app-button {
+            padding: 13px 28px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.98rem;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.06);
+        }
+
+        .btn-primary {
+            background-color: var(--wiki-blue);
+            color: white;
+            box-shadow: 0 6px 20px rgba(51, 102, 204, 0.3);
+        }
+
+        .btn-primary:hover {
+            background-color: var(--wiki-blue-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(51, 102, 204, 0.4);
+        }
+
+        .btn-github {
+            background-color: white;
+            color: var(--text-main);
+            border: 1.5px solid var(--border-color);
+        }
+
+        .btn-github:hover {
+            border-color: var(--wiki-blue);
+            color: var(--wiki-blue);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.08);
+        }
+
+        /* Mockup Device Preview */
+        .mockup-wrap {
+            width: 100%;
+            max-width: 440px;
+            margin: 10px auto 30px auto;
+            position: relative;
+        }
+
+        .mockup-phone {
+            background: #FFFFFF;
+            border-radius: 36px;
+            border: 10px solid #1E293B;
+            box-shadow: 0 25px 60px rgba(0,0,0,0.18);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            text-align: left;
+        }
+
+        .mockup-appbar {
+            background: #FFFFFF;
+            padding: 14px 18px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .mockup-appbar-left {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .mockup-appbar-title {
+            font-size: 0.92rem;
+            font-weight: 700;
+            color: var(--text-main);
+        }
+
+        .mockup-appbar-subtitle {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        .mockup-chat-body {
+            background: #F8F9FA;
+            padding: 16px 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            min-height: 280px;
+        }
+
+        .mock-bubble {
+            background: #FFFFFF;
+            border-radius: 12px;
+            padding: 10px 12px;
+            border: 1px solid #E2E8F0;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.03);
+            max-width: 90%;
+        }
+
+        .mock-bubble.reply {
+            align-self: flex-end;
+            background: #F0F7FF;
+            border-color: #D0E4FF;
+        }
+
+        .mock-meta {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 4px;
+        }
+
+        .mock-author {
+            font-size: 0.82rem;
+            font-weight: 700;
+            color: var(--wiki-blue);
+        }
+
+        .mock-time {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+        }
+
+        /* WhatsApp-style quote banner inside mockup */
+        .mock-quote {
+            background: rgba(51, 102, 204, 0.08);
+            border-left: 3.5px solid var(--wiki-blue);
+            border-radius: 4px;
+            padding: 5px 8px;
+            margin-bottom: 6px;
+        }
+
+        .mock-quote-author {
+            font-size: 0.72rem;
+            font-weight: 700;
+            color: var(--wiki-blue);
+        }
+
+        .mock-quote-snippet {
+            font-size: 0.72rem;
+            color: var(--text-muted);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .mock-text {
+            font-size: 0.82rem;
+            color: #334155;
+            line-height: 1.45;
+        }
+
+        .mock-composer {
+            background: #FFFFFF;
+            border-top: 1px solid var(--border-color);
+            padding: 10px 12px;
+        }
+
+        .mock-composer-quote {
+            background: var(--wiki-blue-light);
+            border-left: 3px solid var(--wiki-blue);
+            border-radius: 4px;
+            padding: 4px 8px;
+            margin-bottom: 6px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .mock-composer-quote-text {
+            font-size: 0.72rem;
+            color: var(--wiki-blue);
+            font-weight: 600;
+        }
+
+        .mock-composer-input {
+            background: #F1F5F9;
+            border-radius: 20px;
+            padding: 8px 14px;
+            font-size: 0.8rem;
+            color: #64748B;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        /* Section Container */
+        .section-wrap {
+            width: 100%;
+            max-width: 1140px;
+            margin: 0 auto;
+            padding: 60px 20px 30px 20px;
+        }
+
+        .section-header {
+            text-align: center;
+            margin-bottom: 44px;
+        }
+
+        .section-title {
+            font-family: 'Outfit', sans-serif;
+            font-size: 2.2rem;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            margin: 0 0 12px 0;
+            color: var(--text-main);
+        }
+
+        .section-subtitle {
+            font-size: 1.05rem;
+            color: var(--text-muted);
+            max-width: 640px;
+            margin: 0 auto;
+        }
+
+        /* Feature Cards Grid */
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 24px;
+            margin-bottom: 30px;
+        }
+
+        .feature-card {
+            background: var(--surface-card);
+            padding: 32px 28px;
+            border-radius: var(--radius-lg);
+            box-shadow: var(--card-shadow);
+            border: 1px solid rgba(0, 0, 0, 0.04);
+            border-top: 4px solid transparent;
+            transition: var(--transition);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-6px);
+            box-shadow: var(--card-hover-shadow);
+        }
+
+        .feature-card.blue { border-top-color: var(--wiki-blue); }
+        .feature-card.green { border-top-color: var(--wiki-green); }
+        .feature-card.red { border-top-color: var(--wiki-red); }
+        .feature-card.yellow { border-top-color: var(--wiki-yellow); }
+        .feature-card.purple { border-top-color: #8B5CF6; }
+        .feature-card.teal { border-top-color: #06B6D4; }
+
+        .feature-icon-box {
+            width: 52px;
+            height: 52px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.6rem;
+            margin-bottom: 18px;
+        }
+
+        .feature-card.blue .feature-icon-box { background: rgba(51, 102, 204, 0.1); color: var(--wiki-blue); }
+        .feature-card.green .feature-icon-box { background: rgba(0, 175, 137, 0.1); color: var(--wiki-green); }
+        .feature-card.red .feature-icon-box { background: rgba(211, 61, 51, 0.1); color: var(--wiki-red); }
+        .feature-card.yellow .feature-icon-box { background: rgba(255, 204, 51, 0.18); color: #B45309; }
+        .feature-card.purple .feature-icon-box { background: rgba(139, 92, 246, 0.1); color: #8B5CF6; }
+        .feature-card.teal .feature-icon-box { background: rgba(6, 182, 212, 0.1); color: #06B6D4; }
+
+        .feature-card h3 {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.35rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            color: var(--text-main);
+        }
+
+        .feature-card p {
+            font-size: 0.96rem;
+            color: var(--text-muted);
+            line-height: 1.65;
+            flex-grow: 1;
+            margin-bottom: 16px;
+        }
+
+        .feature-pill {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.78rem;
+            font-weight: 600;
+            width: fit-content;
+            background: var(--surface-variant);
+            color: #475569;
+        }
+
+        /* Ecosystem section */
+        .ecosystem-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(290px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+
+        .eco-card {
+            background: #FFFFFF;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 24px;
+            text-decoration: none;
+            color: inherit;
+            transition: var(--transition);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .eco-card:hover {
+            transform: translateY(-4px);
+            border-color: var(--wiki-blue);
+            box-shadow: var(--card-hover-shadow);
+        }
+
+        .eco-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        .eco-icon {
+            font-size: 1.8rem;
+        }
+
+        .eco-title {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--text-main);
+        }
+
+        .eco-badge {
+            font-size: 0.72rem;
+            padding: 2px 8px;
+            border-radius: 12px;
+            background: var(--wiki-blue-light);
+            color: var(--wiki-blue);
+            font-weight: 600;
+            margin-left: auto;
+        }
+
+        .eco-desc {
+            font-size: 0.92rem;
+            color: var(--text-muted);
+            line-height: 1.55;
+            margin-bottom: 14px;
+            flex-grow: 1;
+        }
+
+        .eco-link-text {
+            font-size: 0.88rem;
+            font-weight: 600;
+            color: var(--wiki-blue);
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        /* CTA Banner */
+        .cta-box {
+            background: linear-gradient(135deg, #10337A 0%, var(--wiki-blue) 100%);
+            border-radius: var(--radius-lg);
+            padding: 48px 30px;
+            text-align: center;
+            color: white;
+            box-shadow: 0 20px 40px rgba(16, 51, 122, 0.25);
+            margin: 40px 0 20px 0;
+        }
+
+        .cta-box h3 {
+            font-family: 'Outfit', sans-serif;
+            font-size: 2rem;
+            font-weight: 800;
+            margin-bottom: 12px;
+        }
+
+        .cta-box p {
+            font-size: 1.05rem;
+            opacity: 0.9;
+            max-width: 600px;
+            margin: 0 auto 28px auto;
+        }
+
+        /* Footer */
+        footer {
+            margin-top: auto;
+            background: #FFFFFF;
+            border-top: 1px solid var(--border-color);
+            padding: 36px 20px 28px 20px;
+            text-align: center;
+        }
+
+        .footer-links {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
+            margin-bottom: 16px;
+        }
+
+        .footer-links a {
+            text-decoration: none;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: var(--transition);
+        }
+
+        .footer-links a:hover {
+            color: var(--wiki-blue);
+        }
+
+        .footer-copy {
+            font-size: 0.85rem;
+            color: #94A3B8;
+        }
+
+        @media (max-width: 768px) {
+            h1 { font-size: 2.5rem; }
+            .section-title { font-size: 1.8rem; }
+            .nav-links { display: none; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- Navbar -->
+<nav class="navbar">
+    <div class="nav-container">
+        <a href="index-en.html" class="nav-brand">
+            <img src="wikitalk-icon.png" alt="WikiTalk Logo" class="nav-logo">
+            <span class="nav-title">WikiTalk</span>
+        </a>
+        <div class="nav-actions">
+            <ul class="nav-links">
+                <li><a href="#features">Features</a></li>
+                <li><a href="#preview">Preview</a></li>
+                <li><a href="#ecosystem">Ecosystem</a></li>
+                <li><a href="https://github.com/sslaia/wikitalk" target="_blank" rel="noopener noreferrer">GitHub</a></li>
+            </ul>
+            <div class="lang-switch">
+                <a href="index.html">ID</a>
+                <a href="index-en.html" class="active">EN</a>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<!-- Hero Section -->
+<section class="hero">
+    <div class="hero-badge">
+        <span>💬</span> Client for Wikimedia Discussion Talk Pages
+    </div>
+    <img src="wikitalk-icon.png" alt="WikiTalk Logo" class="app-logo">
+    <h1>WikiTalk</h1>
+    <p class="tagline">Discussions & Collaboration for Wikimedia Projects at Your Fingertips</p>
+    <p class="description">
+        WikiTalk is a modern Flutter-based mobile application designed for Wikimedia volunteers and contributors to read, monitor, and participate in talk page discussions across Wikipedia, Wiktionary, and other sister projects.
+    </p>
+
+    <div class="app-links">
+        <a href="https://play.google.com/store/apps/details?id=io.github.sslaia.wikitalk" class="app-button btn-primary" target="_blank" rel="noopener noreferrer">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M3.609 1.814L13.793 12 3.61 22.186a2.373 2.373 0 0 1-.61-.914c-.167-.473-.25-.97-.25-1.48V4.208c0-.51.083-1.007.25-1.48.156-.34.364-.652.61-.914zM15.207 13.414l2.586 2.586-11.516 6.65a2.53 2.53 0 0 1-1.39.408c-.09 0-.18-.006-.268-.018l10.588-9.626zm0-2.828L4.62 0.96a2.53 2.53 0 0 1 1.657.39l11.516 6.65-2.586 2.586zm1.414 1.414l3.195-1.844c1.025-.592 1.025-1.554 0-2.146l-3.195-1.844-2.828 2.828 2.828 2.828l.001-.001.001-.001.001-.001.001-.001.001-.001-.003.007z"/></svg>
+            Get on Play Store
+        </a>
+        <a href="https://github.com/sslaia/wikitalk" class="app-button btn-github" target="_blank" rel="noopener noreferrer">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" clip-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.53 1.032 1.53 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/></svg>
+            GitHub Source Code
+        </a>
+    </div>
+
+    <!-- Phone Mockup Preview -->
+    <div id="preview" class="mockup-wrap">
+        <div class="mockup-phone">
+            <!-- App Bar -->
+            <div class="mockup-appbar">
+                <div class="mockup-appbar-left">
+                    <span style="color: var(--wiki-blue); font-size: 1.1rem;">💬</span>
+                    <div>
+                        <div class="mockup-appbar-title">Village Pump (Policy)</div>
+                        <div class="mockup-appbar-subtitle">en.wikipedia.org &bull; 8 Comments</div>
+                    </div>
+                </div>
+                <span style="font-size: 0.9rem; color: var(--text-muted);">⋮</span>
+            </div>
+
+            <!-- Chat Threads Body -->
+            <div class="mockup-chat-body">
+                <!-- Message 1 -->
+                <div class="mock-bubble">
+                    <div class="mock-meta">
+                        <span class="mock-author">@Slaia</span>
+                        <span class="mock-time">10:15</span>
+                    </div>
+                    <div class="mock-text">
+                        Hello everyone, please review the proposed policy update regarding reliable sourcing guidelines.
+                    </div>
+                </div>
+
+                <!-- Message 2 (WhatsApp-style reply) -->
+                <div class="mock-bubble reply">
+                    <div class="mock-meta">
+                        <span class="mock-author">@WikiVolunteer</span>
+                        <span class="mock-time">10:22</span>
+                    </div>
+                    <!-- Quoted WhatsApp-style banner -->
+                    <div class="mock-quote">
+                        <div class="mock-quote-author">Replying to @Slaia</div>
+                        <div class="mock-quote-snippet">Hello everyone, please review the proposed...</div>
+                    </div>
+                    <div class="mock-text">
+                        I reviewed the draft proposal, the points are well articulated! I agree with verifying primary vs secondary sources.
+                    </div>
+                </div>
+            </div>
+
+            <!-- Composer with Quoted Reply -->
+            <div class="mock-composer">
+                <div class="mock-composer-quote">
+                    <span class="mock-composer-quote-text">↩ Replying to @WikiVolunteer: I reviewed the draft proposal...</span>
+                    <span style="cursor: pointer; color: #64748B;">✕</span>
+                </div>
+                <div class="mock-composer-input">
+                    <span>Type your reply...</span>
+                    <span style="color: var(--wiki-blue); font-weight: 700;">Send</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Features Section -->
+<section id="features" class="section-wrap">
+    <div class="section-header">
+        <h2 class="section-title">Key WikiTalk Features</h2>
+        <p class="section-subtitle">A seamless, fast discussion experience connected directly to the Wikimedia ecosystem.</p>
+    </div>
+
+    <div class="features-grid">
+        <!-- Feature 1 -->
+        <div class="feature-card blue">
+            <div class="feature-icon-box">💬</div>
+            <h3>WhatsApp-Style Quoted Replies</h3>
+            <p>Replying to messages displays the author alongside the first line snippet of the message quoted, making long discussion threads clear and effortless to navigate.</p>
+            <span class="feature-pill">New in this Release</span>
+        </div>
+
+        <!-- Feature 2 -->
+        <div class="feature-card green">
+            <div class="feature-icon-box">🌐</div>
+            <h3>Multi-Project & Multi-Language</h3>
+            <p>Explore discussions across diverse Wikimedia language editions (English, Indonesian, Javanese, Sundanese, Nias, etc.) for both Wikipedia and Wiktionary.</p>
+            <span class="feature-pill">MediaWiki DiscussionTools</span>
+        </div>
+
+        <!-- Feature 3 -->
+        <div class="feature-card yellow">
+            <div class="feature-icon-box">📌</div>
+            <h3>Custom Channels</h3>
+            <p>Monitor any talk page easily. Add specific user talk pages, community portals, or dedicated project pages as custom channels with unread badges.</p>
+            <span class="feature-pill">Flexible Channels</span>
+        </div>
+
+        <!-- Feature 4 -->
+        <div class="feature-card teal">
+            <div class="feature-icon-box">⚡</div>
+            <h3>Full Offline Support</h3>
+            <p>Discussions are cached in a local SQLite database. Read past discussions and prepare drafts even without an active internet connection.</p>
+            <span class="feature-pill">SQLite Offline Cache</span>
+        </div>
+
+        <!-- Feature 5 -->
+        <div class="feature-card red">
+            <div class="feature-icon-box">🔐</div>
+            <h3>Secure Wikimedia OAuth2 Login</h3>
+            <p>Log in securely using official Wikimedia OAuth2 authentication without sharing passwords. Anonymous users can browse public discussions freely.</p>
+            <span class="feature-pill">Secure & Verified</span>
+        </div>
+
+        <!-- Feature 6 -->
+        <div class="feature-card purple">
+            <div class="feature-icon-box">🎨</div>
+            <h3>Codex Theme & Adaptive Layout</h3>
+            <p>Clean interface inspired by Wikimedia Codex Design System. Supports System, Light, and Dark modes, plus multi-pane responsive layout for tablets.</p>
+            <span class="feature-pill">Codex Theme & Tablet Ready</span>
+        </div>
+    </div>
+</section>
+
+<!-- Ecosystem Section -->
+<section id="ecosystem" class="section-wrap">
+    <div class="section-header">
+        <h2 class="section-title">Wiki & Cultural Ecosystem Apps</h2>
+        <p class="section-subtitle">WikiTalk is part of an open-source suite of applications dedicated to regional languages and knowledge sharing.</p>
+    </div>
+
+    <div class="ecosystem-grid">
+        <!-- WikiNusa -->
+        <a href="https://sslaia.github.io/wikinusa/" class="eco-card" target="_blank" rel="noopener noreferrer">
+            <div class="eco-header">
+                <span class="eco-icon">📚</span>
+                <span class="eco-title">WikiNusa</span>
+                <span class="eco-badge">Encyclopedia</span>
+            </div>
+            <p class="eco-desc">An encyclopedia, dictionary, and open books app for Indonesian indigenous languages with crosswords, courses, and photo galleries.</p>
+            <span class="eco-link-text">Visit WikiNusa &rarr;</span>
+        </a>
+
+        <!-- TowiTowi -->
+        <a href="https://sslaia.github.io/towitowi/" class="eco-card" target="_blank" rel="noopener noreferrer">
+            <div class="eco-header">
+                <span class="eco-icon">🕊️</span>
+                <span class="eco-title">TowiTowi</span>
+                <span class="eco-badge">AI Notes</span>
+            </div>
+            <p class="eco-desc">An AI-powered note-taking app inspired by the towi-towi bird of Nias, bringing good news and structured writing to communities.</p>
+            <span class="eco-link-text">Visit TowiTowi &rarr;</span>
+        </a>
+
+        <!-- Nusa Keyboard -->
+        <a href="https://sslaia.github.io/nusa-keyboard/" class="eco-card" target="_blank" rel="noopener noreferrer">
+            <div class="eco-header">
+                <span class="eco-icon">⌨️</span>
+                <span class="eco-title">Nusa Keyboard</span>
+                <span class="eco-badge">Android IME</span>
+            </div>
+            <p class="eco-desc">Smart keyboard with bilingual suggestions, special characters (ö, ŵ), and quick wiki syntax shortcuts for editors.</p>
+            <span class="eco-link-text">Visit Nusa Keyboard &rarr;</span>
+        </a>
+    </div>
+
+    <div class="cta-box">
+        <h3>Collaborate on Open Source</h3>
+        <p>WikiTalk is free and open-source. We welcome contributions, feature requests, and bug reports on GitHub.</p>
+        <div style="display: flex; gap: 14px; justify-content: center; flex-wrap: wrap;">
+            <a href="https://github.com/sslaia/wikitalk" class="app-button btn-primary" style="background: white; color: var(--wiki-blue);" target="_blank" rel="noopener noreferrer">
+                Contribute on GitHub
+            </a>
+            <a href="https://sslaia.github.io/" class="app-button btn-github" style="background: rgba(255,255,255,0.12); color: white; border-color: rgba(255,255,255,0.4);" target="_blank" rel="noopener noreferrer">
+                Visit sslaia.github.io &nearr;
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- Footer -->
+<footer>
+    <div class="footer-links">
+        <a href="index.html">Beranda (ID)</a>
+        <a href="index-en.html">Home (EN)</a>
+        <a href="privacy-policy.html">Privacy Policy</a>
+        <a href="https://github.com/sslaia/wikitalk" target="_blank" rel="noopener noreferrer">GitHub Repository</a>
+        <a href="https://sslaia.github.io/" target="_blank" rel="noopener noreferrer" style="font-weight: 700; color: var(--wiki-blue);">Homepage sslaia.github.io &nearr;</a>
+    </div>
+    <p class="footer-copy">&copy; 2026 WikiTalk &bull; Built for the Wikimedia Community &bull; Visit <a href="https://sslaia.github.io/" target="_blank" rel="noopener noreferrer" style="color: var(--wiki-blue); text-decoration: none; font-weight: 600;">https://sslaia.github.io/</a></p>
+</footer>
+
+</body>
+</html>

@@ -11,10 +11,10 @@ class SettingsState {
   final String basePageTitle;
 
   const SettingsState({
-    this.langCode = 'id',
+    this.langCode = 'en',
     this.project = ProjectType.wikipedia,
     this.themeMode = ThemeMode.system,
-    this.basePageTitle = 'Wikipedia:Warung Kopi',
+    this.basePageTitle = 'Wikipedia:Village pump',
   });
 
   WikiProjectTarget get target => WikiProjectTarget(
@@ -59,6 +59,96 @@ class SettingsNotifier extends StateNotifier<SettingsState> {
           case ProjectType.wikibooks:
             return 'Wikibooks:Warung Kopi';
         }
+      case 'th':
+        switch (project) {
+          case ProjectType.wikipedia:
+            return 'วิกิพีเดีย:สภากาแฟ';
+          case ProjectType.wiktionary:
+            return 'วิกิพจนานุกรม:สภากาแฟ';
+          case ProjectType.wikibooks:
+            return 'วิกิตำรา:สภากาแฟ';
+        }
+      case 'vi':
+        switch (project) {
+          case ProjectType.wikipedia:
+            return 'Wikipedia:Thảo luận';
+          case ProjectType.wiktionary:
+            return 'Wiktionary:Bàn thảo luận';
+          case ProjectType.wikibooks:
+            return 'Wikibooks:Thảo luận';
+        }
+      case 'tet':
+        switch (project) {
+          case ProjectType.wikipedia:
+            return 'Wikipédia:Kafe';
+          case ProjectType.wiktionary:
+            return 'Wikisionáriu:Kafe';
+          case ProjectType.wikibooks:
+            return 'Wikilivru:Kafe';
+        }
+      case 'tl':
+        switch (project) {
+          case ProjectType.wikipedia:
+            return 'Wikipedia:Kapihan';
+          case ProjectType.wiktionary:
+            return 'Wiksiyonaryo:Kapihan';
+          case ProjectType.wikibooks:
+            return 'Wikibooks:Kapihan';
+        }
+      case 'ms':
+        switch (project) {
+          case ProjectType.wikipedia:
+            return 'Wikipedia:Kedai Kopi';
+          case ProjectType.wiktionary:
+            return 'Wikikamus:Kedai Kopi';
+          case ProjectType.wikibooks:
+            return 'Wikibooks:Kedai Kopi';
+        }
+      case 'my':
+        switch (project) {
+          case ProjectType.wikipedia:
+            return 'ဝီကီပီးဒီးယား:လက်ဖက်ရည်ဆိုင်';
+          case ProjectType.wiktionary:
+            return 'ဝစ်ရှင်နရီ:လက်ဖက်ရည်ဆိုင်';
+          case ProjectType.wikibooks:
+            return 'ဝီကီစာအုပ်:လက်ဖက်ရည်ဆိုင်';
+        }
+      case 'km':
+        switch (project) {
+          case ProjectType.wikipedia:
+            return 'វិគីភីឌា:សាលាស្រុក';
+          case ProjectType.wiktionary:
+            return 'វិគីវចនានុក្រម:សាលាស្រុក';
+          case ProjectType.wikibooks:
+            return 'វិគីសៀវភៅ:សាលាស្រុក';
+        }
+      case 'zh':
+        switch (project) {
+          case ProjectType.wikipedia:
+            return 'Wikipedia:互助客栈';
+          case ProjectType.wiktionary:
+            return 'Wiktionary:互助客栈';
+          case ProjectType.wikibooks:
+            return 'Wikibooks:互助客栈';
+        }
+      case 'ja':
+        switch (project) {
+          case ProjectType.wikipedia:
+            return 'Wikipedia:井戸端';
+          case ProjectType.wiktionary:
+            return 'Wiktionary:お茶場';
+          case ProjectType.wikibooks:
+            return 'Wikibooks:談話室';
+        }
+      case 'ko':
+        switch (project) {
+          case ProjectType.wikipedia:
+            return '위키백과:사랑방';
+          case ProjectType.wiktionary:
+            return '위키낱말사전:사랑방';
+          case ProjectType.wikibooks:
+            return '위키책:사랑방';
+        }
       case 'nia':
         switch (project) {
           case ProjectType.wikipedia:
@@ -99,7 +189,7 @@ class SettingsNotifier extends StateNotifier<SettingsState> {
   }
 
   void _loadSettings() {
-    final lang = _prefs.getString('wiki_talk_lang') ?? 'id';
+    final lang = _prefs.getString('wiki_talk_lang') ?? 'en';
     final projIndex = _prefs.getInt('wiki_talk_proj') ?? 0;
     final themeIndex = _prefs.getInt('wiki_talk_theme') ?? 0;
 

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/theme/wiki_theme.dart';
+import '../../l10n/generated/app_localizations.dart';
 import '../providers/channels_provider.dart';
 import '../providers/topics_provider.dart';
 import '../widgets/channels_sidebar.dart';
@@ -35,6 +36,7 @@ class ResponsiveHomeShell extends ConsumerWidget {
   // 1. Mobile Layout (< 650px): Drawer + Topic List -> pushes ConversationScreen
   Widget _buildMobileLayout(BuildContext context, WidgetRef ref) {
     final activeChannel = ref.watch(activeChannelProvider);
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
       appBar: AppBar(
@@ -61,7 +63,7 @@ class ResponsiveHomeShell extends ConsumerWidget {
             ),
             const SizedBox(width: 8),
             Text(
-              activeChannel?.displayName ?? 'Wiki Talk',
+              activeChannel?.getLocalizedDisplayName(l10n) ?? l10n.appTitle,
               style: const TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
             ),
           ],

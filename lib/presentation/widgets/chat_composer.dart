@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../core/theme/wiki_theme.dart';
 import '../../domain/models/chat_message.dart';
+import '../../l10n/generated/app_localizations.dart';
 
 /// Bottom composer for typing and submitting talk page replies.
 class ChatComposer extends StatefulWidget {
@@ -82,6 +83,7 @@ class _ChatComposerState extends State<ChatComposer> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
+    final l10n = AppLocalizations.of(context)!;
 
     return Container(
       decoration: BoxDecoration(
@@ -98,37 +100,71 @@ class _ChatComposerState extends State<ChatComposer> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // Quoted reply banner
+            // Quoted reply banner (WhatsApp style)
             if (widget.replyingTo != null)
               Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-                color: isDark
-                    ? const Color(0xFF1B3B6F)
-                    : const Color(0xFFEAF3FF),
+                margin: const EdgeInsets.only(left: 8, right: 8, top: 6, bottom: 4),
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+                decoration: BoxDecoration(
+                  color: isDark
+                      ? const Color(0xFF1B2A3D)
+                      : const Color(0xFFEAF3FF),
+                  borderRadius: BorderRadius.circular(8),
+                  border: const Border(
+                    left: BorderSide(
+                      color: WikiTheme.wikiBlue,
+                      width: 4,
+                    ),
+                  ),
+                ),
                 child: Row(
                   children: [
-                    const Icon(Icons.reply_rounded,
-                        size: 16, color: WikiTheme.wikiBlue),
+                    const Icon(
+                      Icons.reply_rounded,
+                      size: 18,
+                      color: WikiTheme.wikiBlue,
+                    ),
                     const SizedBox(width: 8),
                     Expanded(
-                      child: Text(
-                        'Replying to ${widget.replyingTo!.author}',
-                        style: theme.textTheme.bodySmall?.copyWith(
-                          color: isDark
-                              ? WikiTheme.wikiBlueDark
-                              : WikiTheme.wikiBlue,
-                          fontWeight: FontWeight.w600,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            l10n.replyingTo(widget.replyingTo!.author.replaceFirst(RegExp(r'^@'), '')),
+                            style: theme.textTheme.bodySmall?.copyWith(
+                              color: isDark
+                                  ? WikiTheme.wikiBlueDark
+                                  : WikiTheme.wikiBlue,
+                              fontWeight: FontWeight.w700,
+                              fontSize: 12,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          if (widget.replyingTo!.firstLineSnippet.isNotEmpty) ...[
+                            const SizedBox(height: 2),
+                            Text(
+                              widget.replyingTo!.firstLineSnippet,
+                              style: theme.textTheme.bodySmall?.copyWith(
+                                color: isDark
+                                    ? WikiTheme.darkTextSecondary
+                                    : WikiTheme.lightTextSecondary,
+                                fontSize: 12,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ],
+                        ],
                       ),
                     ),
                     IconButton(
-                      icon: const Icon(Icons.close_rounded, size: 16),
+                      icon: const Icon(Icons.close_rounded, size: 18),
                       onPressed: widget.onCancelReply,
-                      padding: EdgeInsets.zero,
+                      padding: const EdgeInsets.all(4),
                       constraints: const BoxConstraints(),
+                      tooltip: l10n.cancelReply,
                     ),
                   ],
                 ),
@@ -141,12 +177,12 @@ class _ChatComposerState extends State<ChatComposer> {
                 scrollDirection: Axis.horizontal,
                 padding: const EdgeInsets.symmetric(horizontal: 8),
                 children: [
-                  _toolbarButton('B', 'Bold', () => _insertFormatting("'''", "'''")),
-                  _toolbarButton('I', 'Italic', () => _insertFormatting("''", "''")),
-                  _toolbarButton('Link', 'Wiki Link', () => _insertFormatting('[[', ']]')),
-                  _toolbarButton('@User', 'Mention', () => _insertFormatting('{{u|', '}}')),
-                  _toolbarButton('✓ Setuju', 'Agree badge', () => _insertFormatting('{{Setuju}} ', '')),
-                  _toolbarButton('✗ Tolak', 'Disagree badge', () => _insertFormatting('{{Tidak setuju}} ', '')),
+                  _toolbarButton('B', l10n.bold, () => _insertFormatting("'''", "'''")),
+                  _toolbarButton('I', l10n.italic, () => _insertFormatting("''", "''")),
+                  _toolbarButton(l10n.link, l10n.link, () => _insertFormatting('[[', ']]')),
+                  _toolbarButton('@${l10n.userLabel}', l10n.toolbarMentionTooltip, () => _insertFormatting('{{u|', '}}')),
+                  _toolbarButton('✓ ${l10n.toolbarSupport}', l10n.toolbarSupportTooltip, () => _insertFormatting('{{Support}} ', '')),
+                  _toolbarButton('✗ ${l10n.toolbarOppose}', l10n.toolbarOpposeTooltip, () => _insertFormatting('{{Oppose}} ', '')),
                 ],
               ),
             ),
@@ -165,7 +201,7 @@ class _ChatComposerState extends State<ChatComposer> {
                       minLines: 1,
                       keyboardType: TextInputType.multiline,
                       decoration: InputDecoration(
-                        hintText: 'Write a comment on-wiki...',
+                        hintText: l10n.writeCommentOnWiki,
                         hintStyle: TextStyle(
                           color: isDark
                               ? WikiTheme.darkTextSecondary
@@ -188,6 +224,7 @@ class _ChatComposerState extends State<ChatComposer> {
                   ),
                   const SizedBox(width: 8),
                   IconButton.filled(
+                    tooltip: l10n.send,
                     onPressed: _canSubmit && !widget.isSubmitting
                         ? _handleSend
                         : null,
