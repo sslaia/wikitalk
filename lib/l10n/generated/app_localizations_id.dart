@@ -559,4 +559,26 @@ class AppLocalizationsId extends AppLocalizations {
 
   @override
   String get emptyComment => 'Komentar kosong';
+
+  @override
+  String get noInternetConnection => 'Tidak Ada Koneksi Internet';
+
+  @override
+  String get noInternetDescription =>
+      'Diskusi tidak dapat dimuat tanpa koneksi internet. Silakan periksa jaringan Anda dan coba lagi.';
+
+  @override
+  String get offlineWarning =>
+      'Anda sedang offline. Periksa koneksi internet Anda.';
+
+  @override
+  String get offlineCachedNotice =>
+      'Mode offline: Menampilkan diskusi tersimpan.';
+
+  @override
+  String get openInBrowser => 'Buka di Peramban';
+
+  @override
+  String get openInBrowserTooltip =>
+      'Buka halaman ini di peramban web eksternal';
 }

@@ -555,4 +555,24 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get emptyComment => 'Empty comment';
+
+  @override
+  String get noInternetConnection => 'No Internet Connection';
+
+  @override
+  String get noInternetDescription =>
+      'Discussions cannot be loaded without an internet connection. Please check your network and retry.';
+
+  @override
+  String get offlineWarning =>
+      'You are currently offline. Check your internet connection.';
+
+  @override
+  String get offlineCachedNotice => 'Offline mode: Showing cached discussions.';
+
+  @override
+  String get openInBrowser => 'Open in Browser';
+
+  @override
+  String get openInBrowserTooltip => 'Open this page in external web browser';
 }

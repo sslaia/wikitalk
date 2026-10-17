@@ -19,16 +19,24 @@ class AuthNotifier extends StateNotifier<WikiAuthState> {
 
   Future<void> checkLoginStatus() async {
     state = state.copyWith(isLoading: true);
-    final loggedIn = await _authService.isLoggedIn();
-    String? username;
-    if (loggedIn) {
-      username = await _authService.fetchCurrentUsername(_domain);
+    try {
+      final loggedIn = await _authService.isLoggedIn();
+      String? username;
+      if (loggedIn) {
+        username = await _authService.fetchCurrentUsername(_domain);
+      }
+      state = WikiAuthState(
+        isLoggedIn: loggedIn,
+        isLoading: false,
+        username: username,
+      );
+    } catch (e) {
+      state = WikiAuthState(
+        isLoggedIn: false,
+        isLoading: false,
+        errorMessage: e.toString(),
+      );
     }
-    state = WikiAuthState(
-      isLoggedIn: loggedIn,
-      isLoading: false,
-      username: username,
-    );
   }
 
   Future<void> login(BuildContext context) async {

@@ -1,16 +1,24 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../core/theme/wiki_theme.dart';
 import '../../data/services/wiki_chat_api_service.dart';
 import '../../domain/models/chat_message.dart';
 import '../../domain/models/chat_topic.dart';
 import '../../l10n/generated/app_localizations.dart';
 import '../providers/auth_provider.dart';
+import '../providers/channels_provider.dart';
 import '../providers/settings_provider.dart';
 import '../providers/topics_provider.dart';
 import 'chat_bubble.dart';
 import 'chat_composer.dart';
 import 'wiki_captcha_dialog.dart';
+
+enum LoginPromptAction {
+  cancel,
+  login,
+  openInBrowser,
+}
 
 /// Pane displaying the active conversation thread with chat bubbles and composer.
 class ConversationPane extends ConsumerStatefulWidget {
@@ -25,6 +33,22 @@ class ConversationPane extends ConsumerStatefulWidget {
     this.onBack,
   });
 
+  /// Constructs the web URL for a topic on a Wikimedia project talk page.
+  static Uri buildTopicWebUri({
+    required String domain,
+    String? pageTitle,
+    String? topicTitle,
+  }) {
+    final cleanPage = pageTitle?.trim().replaceAll(' ', '_') ?? '';
+    final cleanTopic = topicTitle?.trim().replaceAll(' ', '_') ?? '';
+    return Uri.https(
+      domain,
+      cleanPage.isNotEmpty ? '/wiki/$cleanPage' : '/',
+    ).replace(
+      fragment: cleanTopic.isNotEmpty ? cleanTopic : null,
+    );
+  }
+
   @override
   ConsumerState<ConversationPane> createState() => _ConversationPaneState();
 }
@@ -38,21 +62,29 @@ class _ConversationPaneState extends ConsumerState<ConversationPane> {
     final topic = widget.topic;
     if (topic == null) return;
     final l10n = AppLocalizations.of(context)!;
+    final domain = ref.read(settingsProvider).target.domain;
 
     final auth = ref.read(authProvider);
     if (!auth.isLoggedIn) {
-      final shouldLogin = await showDialog<bool>(
+      final action = await showDialog<LoginPromptAction>(
         context: context,
         builder: (ctx) => AlertDialog(
           title: Text(l10n.loginRequired),
           content: Text(l10n.loginRequiredMessage),
+          actionsAlignment: MainAxisAlignment.end,
+          actionsOverflowButtonSpacing: 8,
           actions: [
             TextButton(
-              onPressed: () => Navigator.of(ctx).pop(false),
+              onPressed: () => Navigator.of(ctx).pop(LoginPromptAction.cancel),
               child: Text(l10n.cancel),
             ),
+            OutlinedButton.icon(
+              icon: const Icon(Icons.open_in_browser_rounded, size: 16),
+              label: Text(l10n.openInBrowser),
+              onPressed: () => Navigator.of(ctx).pop(LoginPromptAction.openInBrowser),
+            ),
             FilledButton(
-              onPressed: () => Navigator.of(ctx).pop(true),
+              onPressed: () => Navigator.of(ctx).pop(LoginPromptAction.login),
               style: FilledButton.styleFrom(backgroundColor: WikiTheme.wikiBlue),
               child: Text(l10n.logIn),
             ),
@@ -60,7 +92,23 @@ class _ConversationPaneState extends ConsumerState<ConversationPane> {
         ),
       );
 
-      if (shouldLogin == true && mounted) {
+      if (action == LoginPromptAction.openInBrowser) {
+        final activeChannel = ref.read(activeChannelProvider);
+        final pageUri = ConversationPane.buildTopicWebUri(
+          domain: domain,
+          pageTitle: activeChannel?.pageTitle,
+          topicTitle: topic.title,
+        );
+
+        try {
+          await launchUrl(pageUri, mode: LaunchMode.externalApplication);
+        } catch (e) {
+          if (mounted) {
+            _showErrorSnackbar(e.toString());
+          }
+        }
+        return;
+      } else if (action == LoginPromptAction.login && mounted) {
         await ref.read(authProvider.notifier).login(context);
         if (!ref.read(authProvider).isLoggedIn) return;
       } else {
@@ -225,6 +273,19 @@ class _ConversationPaneState extends ConsumerState<ConversationPane> {
                     ),
                   ],
                 ),
+              ),
+              IconButton(
+                icon: const Icon(Icons.open_in_browser_rounded),
+                tooltip: l10n.openInBrowserTooltip,
+                onPressed: () {
+                  final activeChannel = ref.read(activeChannelProvider);
+                  final pageUri = ConversationPane.buildTopicWebUri(
+                    domain: domain,
+                    pageTitle: activeChannel?.pageTitle,
+                    topicTitle: topic.title,
+                  );
+                  launchUrl(pageUri, mode: LaunchMode.externalApplication);
+                },
               ),
             ],
           ),

@@ -18,12 +18,14 @@ class TopicsState {
   final bool isLoading;
   final bool isRefreshing;
   final String? errorMessage;
+  final bool isOffline;
 
   const TopicsState({
     this.topics = const [],
     this.isLoading = false,
     this.isRefreshing = false,
     this.errorMessage,
+    this.isOffline = false,
   });
 
   TopicsState copyWith({
@@ -31,12 +33,14 @@ class TopicsState {
     bool? isLoading,
     bool? isRefreshing,
     String? errorMessage,
+    bool? isOffline,
   }) {
     return TopicsState(
       topics: topics ?? this.topics,
       isLoading: isLoading ?? this.isLoading,
       isRefreshing: isRefreshing ?? this.isRefreshing,
       errorMessage: errorMessage,
+      isOffline: isOffline ?? this.isOffline,
     );
   }
 }
@@ -50,6 +54,19 @@ class TopicsNotifier extends StateNotifier<TopicsState> {
     if (_channel != null) {
       Future.microtask(() => loadTopics());
     }
+  }
+
+  static bool isNetworkError(Object error) {
+    final str = error.toString().toLowerCase();
+    return str.contains('socketexception') ||
+        str.contains('failed host lookup') ||
+        str.contains('network is unreachable') ||
+        str.contains('connection refused') ||
+        str.contains('clientexception') ||
+        str.contains('handshakeexception') ||
+        str.contains('connection reset') ||
+        str.contains('timed out') ||
+        str.contains('timeout');
   }
 
   Future<void> loadTopics() async {
@@ -78,6 +95,7 @@ class TopicsNotifier extends StateNotifier<TopicsState> {
       if (cachedTopics.isNotEmpty &&
           latestRev != null &&
           _channel.lastRevisionId == latestRev) {
+        state = TopicsState(topics: cachedTopics, isLoading: false, isOffline: false);
         return;
       }
 
@@ -93,10 +111,21 @@ class TopicsNotifier extends StateNotifier<TopicsState> {
         db.updateChannelRevision(pageTitle, latestRev);
       }
 
-      state = TopicsState(topics: fresh, isLoading: false);
+      state = TopicsState(topics: fresh, isLoading: false, isOffline: false);
     } catch (e) {
+      final offline = isNetworkError(e);
       if (cachedTopics.isEmpty) {
-        state = TopicsState(isLoading: false, errorMessage: e.toString());
+        state = TopicsState(
+          isLoading: false,
+          errorMessage: e.toString(),
+          isOffline: offline,
+        );
+      } else {
+        state = state.copyWith(
+          isLoading: false,
+          isOffline: offline,
+          errorMessage: offline ? null : e.toString(),
+        );
       }
     }
   }
@@ -128,9 +157,14 @@ class TopicsNotifier extends StateNotifier<TopicsState> {
         db.updateChannelRevision(pageTitle, latestRev);
       }
 
-      state = TopicsState(topics: fresh, isRefreshing: false);
+      state = TopicsState(topics: fresh, isRefreshing: false, isOffline: false);
     } catch (e) {
-      state = state.copyWith(isRefreshing: false, errorMessage: e.toString());
+      final offline = isNetworkError(e);
+      state = state.copyWith(
+        isRefreshing: false,
+        isOffline: offline,
+        errorMessage: offline ? null : e.toString(),
+      );
     }
   }
 

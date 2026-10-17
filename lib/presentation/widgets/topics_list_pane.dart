@@ -187,11 +187,52 @@ class _TopicsListPaneState extends ConsumerState<TopicsListPane> {
     final l10n = AppLocalizations.of(context)!;
 
     final activeChannel = ref.watch(activeChannelProvider);
+    final channelsAsync = ref.watch(channelsProvider);
     final topicsState = ref.watch(topicsProvider);
     final selectedTopicId = ref.watch(activeTopicIdProvider);
 
     if (activeChannel == null) {
-      return Center(child: Text(l10n.selectChannelToView));
+      return channelsAsync.when(
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (e, _) {
+          final isOffline = TopicsNotifier.isNetworkError(e);
+          return Center(
+            child: Padding(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    isOffline ? Icons.wifi_off_rounded : Icons.error_outline_rounded,
+                    size: 48,
+                    color: WikiTheme.wikiRed,
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    isOffline ? l10n.noInternetConnection : l10n.error,
+                    style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    isOffline ? l10n.noInternetDescription : e.toString(),
+                    textAlign: TextAlign.center,
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      color: isDark ? WikiTheme.darkTextSecondary : WikiTheme.lightTextSecondary,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  ElevatedButton.icon(
+                    icon: const Icon(Icons.refresh_rounded),
+                    label: Text(l10n.retry),
+                    onPressed: () => ref.read(channelsProvider.notifier).loadChannels(),
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
+        data: (_) => Center(child: Text(l10n.selectChannelToView)),
+      );
     }
 
     final filteredTopics = topicsState.topics.where((t) {
@@ -255,6 +296,44 @@ class _TopicsListPaneState extends ConsumerState<TopicsListPane> {
           ),
         ),
 
+        // Offline Cached Notice Banner
+        if (topicsState.isOffline && topicsState.topics.isNotEmpty)
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+            color: isDark ? const Color(0xFF3B2D00) : const Color(0xFFFFF4D4),
+            child: Row(
+              children: [
+                Icon(
+                  Icons.wifi_off_rounded,
+                  size: 16,
+                  color: isDark ? WikiTheme.wikiYellow : const Color(0xFF8A6D00),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    l10n.offlineCachedNotice,
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: isDark ? WikiTheme.wikiYellow : const Color(0xFF8A6D00),
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ),
+                InkWell(
+                  onTap: () => ref.read(topicsProvider.notifier).refresh(),
+                  child: Text(
+                    l10n.retry,
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                      color: isDark ? WikiTheme.wikiYellow : const Color(0xFF8A6D00),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+
         // Search Bar
         Padding(
           padding: const EdgeInsets.fromLTRB(10, 8, 10, 4),
@@ -289,22 +368,49 @@ class _TopicsListPaneState extends ConsumerState<TopicsListPane> {
             onRefresh: () => ref.read(topicsProvider.notifier).refresh(),
             child: topicsState.isLoading && topicsState.topics.isEmpty
                 ? const Center(child: CircularProgressIndicator())
-                : topicsState.errorMessage != null && topicsState.topics.isEmpty
+                : (topicsState.errorMessage != null || topicsState.isOffline) &&
+                        topicsState.topics.isEmpty
                     ? Center(
                         child: Padding(
-                          padding: const EdgeInsets.all(16),
+                          padding: const EdgeInsets.all(24),
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              const Icon(Icons.error_outline_rounded,
-                                  size: 40, color: WikiTheme.wikiRed),
-                              const SizedBox(height: 8),
-                              Text(topicsState.errorMessage!),
+                              Icon(
+                                topicsState.isOffline
+                                    ? Icons.wifi_off_rounded
+                                    : Icons.error_outline_rounded,
+                                size: 48,
+                                color: WikiTheme.wikiRed,
+                              ),
                               const SizedBox(height: 12),
-                              ElevatedButton(
+                              Text(
+                                topicsState.isOffline
+                                    ? l10n.noInternetConnection
+                                    : l10n.error,
+                                style: theme.textTheme.titleMedium?.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              const SizedBox(height: 6),
+                              Text(
+                                topicsState.isOffline
+                                    ? l10n.noInternetDescription
+                                    : (topicsState.errorMessage ??
+                                        l10n.failedToLoadDiscussions),
+                                textAlign: TextAlign.center,
+                                style: theme.textTheme.bodyMedium?.copyWith(
+                                  color: isDark
+                                      ? WikiTheme.darkTextSecondary
+                                      : WikiTheme.lightTextSecondary,
+                                ),
+                              ),
+                              const SizedBox(height: 16),
+                              ElevatedButton.icon(
+                                icon: const Icon(Icons.refresh_rounded),
                                 onPressed: () =>
                                     ref.read(topicsProvider.notifier).loadTopics(),
-                                child: Text(l10n.retry),
+                                label: Text(l10n.retry),
                               ),
                             ],
                           ),

@@ -1,6 +1,8 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'core/locale_utils.dart';
 import 'core/theme/wiki_theme.dart';
@@ -12,6 +14,21 @@ import 'presentation/screens/responsive_home_shell.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Guard against unhandled Flutter framework errors
+  FlutterError.onError = (details) {
+    FlutterError.presentError(details);
+    debugPrint('FlutterError caught: ${details.exception}');
+  };
+
+  // Guard against unhandled asynchronous/platform errors so the app never crashes with OS alert dialog
+  PlatformDispatcher.instance.onError = (error, stack) {
+    debugPrint('Safe top-level error caught: $error');
+    return true; // Prevents process crash dialog
+  };
+
+  // Disable runtime fetching so google_fonts safely uses pre-bundled local assets or system fonts
+  GoogleFonts.config.allowRuntimeFetching = false;
 
   // Initialize persistent services
   final prefs = await SharedPreferences.getInstance();

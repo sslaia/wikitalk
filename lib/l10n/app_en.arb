@@ -241,5 +241,11 @@
     }
   },
   "failedToLoadCaptchaImage": "Failed to load CAPTCHA image.",
-  "emptyComment": "Empty comment"
+  "emptyComment": "Empty comment",
+  "noInternetConnection": "No Internet Connection",
+  "noInternetDescription": "Discussions cannot be loaded without an internet connection. Please check your network and retry.",
+  "offlineWarning": "You are currently offline. Check your internet connection.",
+  "offlineCachedNotice": "Offline mode: Showing cached discussions.",
+  "openInBrowser": "Open in Browser",
+  "openInBrowserTooltip": "Open this page in external web browser"
 }

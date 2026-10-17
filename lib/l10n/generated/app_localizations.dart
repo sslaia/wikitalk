@@ -1057,6 +1057,42 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Empty comment'**
   String get emptyComment;
+
+  /// No description provided for @noInternetConnection.
+  ///
+  /// In en, this message translates to:
+  /// **'No Internet Connection'**
+  String get noInternetConnection;
+
+  /// No description provided for @noInternetDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Discussions cannot be loaded without an internet connection. Please check your network and retry.'**
+  String get noInternetDescription;
+
+  /// No description provided for @offlineWarning.
+  ///
+  /// In en, this message translates to:
+  /// **'You are currently offline. Check your internet connection.'**
+  String get offlineWarning;
+
+  /// No description provided for @offlineCachedNotice.
+  ///
+  /// In en, this message translates to:
+  /// **'Offline mode: Showing cached discussions.'**
+  String get offlineCachedNotice;
+
+  /// No description provided for @openInBrowser.
+  ///
+  /// In en, this message translates to:
+  /// **'Open in Browser'**
+  String get openInBrowser;
+
+  /// No description provided for @openInBrowserTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Open this page in external web browser'**
+  String get openInBrowserTooltip;
 }
 
 class _AppLocalizationsDelegate

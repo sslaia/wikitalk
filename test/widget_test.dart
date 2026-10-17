@@ -6,7 +6,9 @@ import 'package:wiki_talk/domain/models/chat_topic.dart';
 import 'package:wiki_talk/domain/models/discussion_channel.dart';
 import 'package:wiki_talk/domain/models/wiki_project_target.dart';
 import 'package:wiki_talk/presentation/providers/settings_provider.dart';
+import 'package:wiki_talk/presentation/providers/topics_provider.dart';
 import 'package:wiki_talk/presentation/widgets/chat_bubble.dart';
+import 'package:wiki_talk/presentation/widgets/conversation_pane.dart';
 import 'package:wikimedia_core/wikimedia_core.dart';
 
 void main() {
@@ -252,5 +254,71 @@ void main() {
     // Empty or blank links
     expect(ChatBubble.resolveUri('', domain), isNull);
     expect(ChatBubble.resolveUri('   ', domain), isNull);
+  });
+
+  test('TopicsNotifier.isNetworkError correctly detects offline and network failures', () {
+    expect(TopicsNotifier.isNetworkError('SocketException: Failed host lookup: \'id.wikipedia.org\''), isTrue);
+    expect(TopicsNotifier.isNetworkError('ClientException: Connection refused, uri=https://...'), isTrue);
+    expect(TopicsNotifier.isNetworkError('TimeoutException after 0:00:10.000000'), isTrue);
+    expect(TopicsNotifier.isNetworkError('HandshakeException: Handshake error in client'), isTrue);
+    expect(TopicsNotifier.isNetworkError('OS Error: Network is unreachable, errno = 101'), isTrue);
+    expect(TopicsNotifier.isNetworkError('FormatException: Unexpected character at line 1'), isFalse);
+    expect(TopicsNotifier.isNetworkError('Exception: MediaWiki DiscussionTools API error (missingtitle)'), isFalse);
+  });
+
+  test('TopicsState correctly initializes and updates isOffline property', () {
+    const initialState = TopicsState();
+    expect(initialState.isOffline, isFalse);
+
+    final offlineState = initialState.copyWith(
+      isOffline: true,
+      errorMessage: 'SocketException: Failed host lookup',
+    );
+    expect(offlineState.isOffline, isTrue);
+    expect(offlineState.errorMessage, 'SocketException: Failed host lookup');
+
+    final backOnlineState = offlineState.copyWith(
+      isOffline: false,
+      errorMessage: null,
+    );
+    expect(backOnlineState.isOffline, isFalse);
+    expect(backOnlineState.errorMessage, isNull);
+  });
+
+  test('ConversationPane.buildTopicWebUri builds correct external browser URL with anchor', () {
+    final uri1 = ConversationPane.buildTopicWebUri(
+      domain: 'id.wikipedia.org',
+      pageTitle: 'Wikipedia:Warung Kopi (Kebijakan)',
+      topicTitle: 'Usulan Aturan Baru',
+    );
+    expect(
+      uri1.toString(),
+      'https://id.wikipedia.org/wiki/Wikipedia:Warung_Kopi_(Kebijakan)#Usulan_Aturan_Baru',
+    );
+
+    final uri2 = ConversationPane.buildTopicWebUri(
+      domain: 'en.wikipedia.org',
+      pageTitle: 'Wikipedia:Village pump (technical)',
+      topicTitle: 'Dark mode styling issue',
+    );
+    expect(
+      uri2.toString(),
+      'https://en.wikipedia.org/wiki/Wikipedia:Village_pump_(technical)#Dark_mode_styling_issue',
+    );
+
+    // Empty page title fallbacks cleanly
+    final uri3 = ConversationPane.buildTopicWebUri(
+      domain: 'id.wikipedia.org',
+      pageTitle: '',
+      topicTitle: '',
+    );
+    expect(uri3.toString(), 'https://id.wikipedia.org/');
+  });
+
+  test('LoginPromptAction has cancel, login, and openInBrowser choices', () {
+    expect(LoginPromptAction.values, contains(LoginPromptAction.cancel));
+    expect(LoginPromptAction.values, contains(LoginPromptAction.login));
+    expect(LoginPromptAction.values, contains(LoginPromptAction.openInBrowser));
+    expect(LoginPromptAction.values.length, 3);
   });
 }

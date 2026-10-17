@@ -6,6 +6,7 @@ import '../../l10n/generated/app_localizations.dart';
 import '../providers/auth_provider.dart';
 import '../providers/channels_provider.dart';
 import '../providers/settings_provider.dart';
+import '../providers/topics_provider.dart';
 
 /// Navigation Sidebar or Drawer for switching between discussion channels/subpages.
 class ChannelsSidebar extends ConsumerWidget {
@@ -182,12 +183,48 @@ class ChannelsSidebar extends ConsumerWidget {
               Expanded(
                 child: channelsAsync.when(
                   loading: () => const Center(child: CircularProgressIndicator()),
-                  error: (e, _) => Center(
-                    child: Padding(
-                      padding: const EdgeInsets.all(12),
-                      child: Text('${l10n.error}: $e'),
-                    ),
-                  ),
+                  error: (e, _) {
+                    final isOffline = TopicsNotifier.isNetworkError(e);
+                    return Center(
+                      child: Padding(
+                        padding: const EdgeInsets.all(16),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              isOffline ? Icons.wifi_off_rounded : Icons.error_outline_rounded,
+                              size: 36,
+                              color: WikiTheme.wikiRed,
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              isOffline ? l10n.noInternetConnection : l10n.error,
+                              style: const TextStyle(fontWeight: FontWeight.bold),
+                              textAlign: TextAlign.center,
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              isOffline ? l10n.noInternetDescription : e.toString(),
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: isDark
+                                    ? WikiTheme.darkTextSecondary
+                                    : WikiTheme.lightTextSecondary,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                            const SizedBox(height: 12),
+                            ElevatedButton.icon(
+                              icon: const Icon(Icons.refresh_rounded, size: 16),
+                              label: Text(l10n.retry),
+                              onPressed: () =>
+                                  ref.read(channelsProvider.notifier).loadChannels(),
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
                   data: (channels) {
                     return ListView(
                       padding: const EdgeInsets.symmetric(vertical: 8),

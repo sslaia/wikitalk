@@ -159,5 +159,11 @@
   "channelMainDiscussionBoard": "Papan diskusi utama di {domain}",
   "channelDiscussionPageOn": "Halaman diskusi di {domain}",
   "failedToLoadCaptchaImage": "Gagal memuat gambar CAPTCHA.",
-  "emptyComment": "Komentar kosong"
+  "emptyComment": "Komentar kosong",
+  "noInternetConnection": "Tidak Ada Koneksi Internet",
+  "noInternetDescription": "Diskusi tidak dapat dimuat tanpa koneksi internet. Silakan periksa jaringan Anda dan coba lagi.",
+  "offlineWarning": "Anda sedang offline. Periksa koneksi internet Anda.",
+  "offlineCachedNotice": "Mode offline: Menampilkan diskusi tersimpan.",
+  "openInBrowser": "Buka di Peramban",
+  "openInBrowserTooltip": "Buka halaman ini di peramban web eksternal"
 }
